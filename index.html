@@ -1,86 +1,40 @@
-/* Reseteo de algunos estilos predeterminados */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Propinas</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="jsPDF.min.js"></script>  <!-- Librería jsPDF -->
+</head>
+<body>
+    <h1>Registro de Propinas</h1>
+    
+    <form id="form">
+        <label for="id_usuario">ID Usuario:</label>
+        <input type="number" id="id_usuario" required><br>
+        
+        <label for="monto">Monto:</label>
+        <input type="number" id="monto" step="0.01" required><br>
+        
+        <button type="submit">Registrar Propina</button>
+    </form>
 
-/* Fondo y color general */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+    <h2>Propinas Registradas:</h2>
+    <table id="tabla-propinas">
+        <thead>
+            <tr>
+                <th>ID Usuario</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-/* Estilo del contenedor */
-.container {
-    background-color: white;
-    border-radius: 10px;
-    padding: 30px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+    <button id="generar-pdf">Generar PDF</button>
+    <button id="imprimir-ticket">Imprimir Ticket</button>
 
-/* Título */
-h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-/* Estilos de los grupos de entrada */
-.input-group {
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    font-size: 16px;
-    color: #555;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    color: #333;
-    transition: border-color 0.3s ease;
-}
-
-.input-group input:focus {
-    border-color: #007BFF;
-    outline: none;
-}
-
-/* Estilo del botón de envío */
-.submit-btn {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    width: 100%;
-    font-size: 18px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.submit-btn:hover {
-    background-color: #0056b3;
-}
-
-/* Estilo responsivo */
-@media screen and (max-width: 480px) {
-    .container {
-        padding: 20px;
-        max-width: 90%;
-    }
-}
-
+    <script src="script.js"></script> <!-- Enlazamos el archivo JavaScript -->
+</body>
+</html>
