@@ -1,88 +1,84 @@
-// Cargar las propinas desde el almacenamiento local
-let propinas = JSON.parse(localStorage.getItem('propinas')) || [];
+// Arreglo para almacenar las propinas registradas
+let propinas = [];
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Cargar las propinas registradas al cargar la página
-    mostrarPropinas();
+// Función para agregar propina
+document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    let id_usuario = document.getElementById('id_usuario').value;
+    let monto = document.getElementById('monto').value;
+    let fecha = new Date().toLocaleString();
 
-    // Manejo del formulario de ingreso de propinas
-    document.getElementById('form').addEventListener('submit', function (event) {
-        event.preventDefault();
+    // Guardar la propina
+    propinas.push({ id_usuario, fecha, monto });
 
-        const id_usuario = document.getElementById('id_usuario').value;
-        const monto = document.getElementById('monto').value;
-        const fecha = new Date().toISOString().split('T')[0]; // Fecha en formato YYYY-MM-DD
+    // Actualizar la tabla
+    actualizarTabla();
 
-        // Crear el objeto de propina
-        const propina = { id_usuario, fecha, monto };
-
-        // Agregar la nueva propina al array de propinas
-        propinas.push(propina);
-
-        // Guardar las propinas en el almacenamiento local
-        localStorage.setItem('propinas', JSON.stringify(propinas));
-
-        // Actualizar la tabla de propinas
-        mostrarPropinas();
-
-        // Limpiar el formulario
-        document.getElementById('form').reset();
-    });
-
-    // Generar PDF
-    document.getElementById('generar-pdf').addEventListener('click', function () {
-        const doc = new jsPDF();
-        doc.setFont('Arial', 'B', 12);
-
-        // Título
-        doc.text("Registro de Propinas", 20, 20);
-
-        // Agregar las propinas al PDF
-        let yPosition = 30;
-        propinas.forEach(propina => {
-            doc.text(`ID Usuario: ${propina.id_usuario} | Fecha: ${propina.fecha} | Monto: $${propina.monto}`, 20, yPosition);
-            yPosition += 10;
-        });
-
-        // Guardar el PDF
-        doc.save('propinas.pdf');
-    });
-
-    // Imprimir ticket (simulando la impresión en el navegador)
-    document.getElementById('imprimir-ticket').addEventListener('click', function () {
-        let ticketContent = "";
-        propinas.forEach(propina => {
-            ticketContent += `ID Usuario: ${propina.id_usuario}\nFecha: ${propina.fecha}\nMonto: $${propina.monto}\n\n`;
-        });
-
-        // Crear un iframe invisible para imprimir
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.width = '0px';
-        iframe.style.height = '0px';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-
-        // Escribir el contenido del ticket en el iframe y enviarlo a la impresora
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(ticketContent);
-        doc.close();
-        iframe.contentWindow.print();
-    });
+    // Limpiar los campos del formulario
+    document.getElementById('id_usuario').value = '';
+    document.getElementById('monto').value = '';
 });
 
-// Función para mostrar las propinas en la tabla
-function mostrarPropinas() {
-    const tabla = document.getElementById('tabla-propinas').getElementsByTagName('tbody')[0];
-    tabla.innerHTML = '';
+// Función para actualizar la tabla
+function actualizarTabla() {
+    const tbody = document.getElementById('tabla-propinas').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
 
-    propinas.forEach(propina => {
-        const row = tabla.insertRow();
-        row.innerHTML = `
-            <td>${propina.id_usuario}</td>
-            <td>${propina.fecha}</td>
-            <td>${propina.monto}</td>
-        `;
+    propinas.forEach(function (propina) {
+        let row = tbody.insertRow();
+        row.insertCell(0).textContent = propina.id_usuario;
+        row.insertCell(1).textContent = propina.fecha;
+        row.insertCell(2).textContent = propina.monto;
     });
 }
+
+// Función para generar el PDF
+document.getElementById('generar-pdf').addEventListener('click', function () {
+    const doc = new jsPDF();
+
+    doc.text('Registro de Propinas', 10, 10);
+    propinas.forEach(function (propina, index) {
+        doc.text(`${index + 1}. ${propina.id_usuario} - ${propina.fecha} - ${propina.monto}`, 10, 20 + (index * 10));
+    });
+    doc.save('propinas.pdf');
+});
+
+// Función para imprimir el ticket
+document.getElementById('imprimir-ticket').addEventListener('click', function () {
+    let printerContent = `
+        <div style="text-align: center; font-family: Arial, sans-serif;">
+            <h2>Ticket de Propina</h2>
+            <p>ID Usuario: ${propinas[propinas.length - 1].id_usuario}</p>
+            <p>Fecha: ${propinas[propinas.length - 1].fecha}</p>
+            <p>Monto: $${propinas[propinas.length - 1].monto}</p>
+        </div>
+    `;
+    
+    let printWindow = window.open('', '', 'height=500,width=500');
+    printWindow.document.write(printerContent);
+    printWindow.document.close();
+    printWindow.print();
+});
+
+// Función para ver los datos con contraseña
+document.getElementById('ver-datos').addEventListener('click', function () {
+    let password = prompt("Ingrese la contraseña:");
+    if (password === "22782522") {
+        alert("Datos de propinas: " + JSON.stringify(propinas));
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
+
+// Función para borrar los datos con contraseña
+document.getElementById('borrar-datos').addEventListener('click', function () {
+    let password = prompt("Ingrese la contraseña:");
+    if (password === "22782522") {
+        propinas = [];
+        actualizarTabla();
+        alert("Datos borrados.");
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
