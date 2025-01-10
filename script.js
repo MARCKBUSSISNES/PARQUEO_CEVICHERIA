@@ -66,6 +66,9 @@ document.getElementById('ver-datos').addEventListener('click', function () {
     let password = prompt("Ingrese la contraseña:");
     if (password === "22782522") {
         alert("Datos de propinas: " + JSON.stringify(propinas));
+        // Mostrar los datos
+        document.getElementById('form-id_usuario').classList.remove('hidden');
+        document.getElementById('form-monto').classList.remove('hidden');
     } else {
         alert("Contraseña incorrecta.");
     }
