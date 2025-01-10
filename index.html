@@ -1,51 +1,87 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Propinas</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="jsPDF.min.js"></script>  <!-- Librería jsPDF -->
-</head>
-<body>
-    <div class="container">
-        <h1>Registro de Propinas</h1>
-        
-        <form id="form">
-            <div class="form-group" id="form-id_usuario">
-                <label for="id_usuario">Nombre de Mesero:</label>
-                <input type="text" id="id_usuario" required placeholder="Nombre del mesero">
-            </div>
-            
-            <div class="form-group" id="form-monto">
-                <label for="monto">Monto:</label>
-                <input type="number" id="monto" step="0.01" required placeholder="Monto de la propina">
-            </div>
-            
-            <button type="submit" class="btn-submit">Registrar Propina</button>
-        </form>
+// Arreglo para almacenar las propinas registradas
+let propinas = [];
 
-        <h2>Propinas Registradas:</h2>
-        <table id="tabla-propinas">
-            <thead>
-                <tr>
-                    <th>ID Usuario</th>
-                    <th>Fecha</th>
-                    <th>Monto</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+// Función para agregar propina
+document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    let id_usuario = document.getElementById('id_usuario').value;
+    let monto = document.getElementById('monto').value;
+    let fecha = new Date().toLocaleString();
 
-        <div class="btn-container">
-            <button id="generar-pdf" class="btn">Generar PDF</button>
-            <button id="imprimir-ticket" class="btn">Imprimir Ticket</button>
+    // Guardar la propina
+    propinas.push({ id_usuario, fecha, monto });
+
+    // Actualizar la tabla
+    actualizarTabla();
+
+    // Limpiar los campos del formulario
+    document.getElementById('id_usuario').value = '';
+    document.getElementById('monto').value = '';
+});
+
+// Función para actualizar la tabla
+function actualizarTabla() {
+    const tbody = document.getElementById('tabla-propinas').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+
+    propinas.forEach(function (propina) {
+        let row = tbody.insertRow();
+        row.insertCell(0).textContent = propina.id_usuario;
+        row.insertCell(1).textContent = propina.fecha;
+        row.insertCell(2).textContent = propina.monto;
+    });
+}
+
+// Función para generar el PDF
+document.getElementById('generar-pdf').addEventListener('click', function () {
+    const doc = new jsPDF();
+
+    doc.text('Registro de Propinas', 10, 10);
+    propinas.forEach(function (propina, index) {
+        doc.text(`${index + 1}. ${propina.id_usuario} - ${propina.fecha} - ${propina.monto}`, 10, 20 + (index * 10));
+    });
+    doc.save('propinas.pdf');
+});
+
+// Función para imprimir el ticket
+document.getElementById('imprimir-ticket').addEventListener('click', function () {
+    let printerContent = `
+        <div style="text-align: center; font-family: Arial, sans-serif;">
+            <h2>Ticket de Propina</h2>
+            <p>ID Usuario: ${propinas[propinas.length - 1].id_usuario}</p>
+            <p>Fecha: ${propinas[propinas.length - 1].fecha}</p>
+            <p>Monto: $${propinas[propinas.length - 1].monto}</p>
         </div>
+    `;
+    
+    let printWindow = window.open('', '', 'height=500,width=500');
+    printWindow.document.write(printerContent);
+    printWindow.document.close();
+    printWindow.print();
+});
 
-        <button id="ver-datos" class="btn">Ver Datos (Contraseña)</button>
-        <button id="borrar-datos" class="btn">Borrar Datos (Contraseña)</button>
-    </div>
+// Función para ver los datos con contraseña
+document.getElementById('ver-datos').addEventListener('click', function () {
+    let password = prompt("Ingrese la contraseña:");
+    if (password === "22782522") {
+        alert("Datos de propinas: " + JSON.stringify(propinas));
+        // Mostrar los datos
+        document.getElementById('form-id_usuario').classList.remove('hidden');
+        document.getElementById('form-monto').classList.remove('hidden');
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
 
-    <script src="script.js"></script> <!-- Enlazamos el archivo JavaScript -->
-</body>
-</html>
+// Función para borrar los datos con contraseña
+document.getElementById('borrar-datos').addEventListener('click', function () {
+    let password = prompt("Ingrese la contraseña:");
+    if (password === "22782522") {
+        propinas = [];
+        actualizarTabla();
+        alert("Datos borrados.");
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
