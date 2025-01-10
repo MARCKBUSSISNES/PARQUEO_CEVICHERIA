@@ -8,8 +8,8 @@
 /* Estilos globales */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f7f7f7;
-    color: #333;
+    background-color: #0D0D0D;  /* Fondo más oscuro */
+    color: #FF33CC;  /* Texto verde neón claro */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,18 +19,19 @@ body {
 
 /* Contenedor principal */
 .container {
-    background-color: #ffffff;
-    border-radius: 10px;
+    background-color: #1C1C1C;
+    border-radius: 15px;
     padding: 40px;
     width: 100%;
     max-width: 600px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
     text-align: center;
+    border: 2px solid #FF33CC;  /* Borde neón morado */
 }
 
 /* Título */
 h1 {
-    color: #4CAF50;
+    color: #FF33CC;
     margin-bottom: 20px;
 }
 
@@ -41,30 +42,32 @@ h1 {
 }
 
 .form-group label {
-    font-size: 16px;
-    color: #555;
+    font-size: 18px;
+    color: #FF33CC;
     display: block;
     margin-bottom: 8px;
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
+    padding: 12px;
+    border: 2px solid #FF33CC;
     border-radius: 5px;
     font-size: 16px;
     transition: border-color 0.3s ease;
+    background-color: #333333;
+    color: #FF33CC;
 }
 
 .form-group input:focus {
-    border-color: #4CAF50;
+    border-color: #FF66FF;
     outline: none;
 }
 
 /* Estilo de los botones */
 .btn-submit, .btn {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #FF33CC;
+    color: black;
     padding: 12px;
     width: 100%;
     border: none;
@@ -76,7 +79,7 @@ h1 {
 }
 
 .btn-submit:hover, .btn:hover {
-    background-color: #45a049;
+    background-color: #FF66FF;
 }
 
 /* Tabla de registros */
@@ -89,16 +92,16 @@ table {
 table th, table td {
     padding: 10px;
     text-align: center;
-    border: 1px solid #ddd;
+    border: 1px solid #FF33CC;
 }
 
 table th {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #333333;
+    color: #FF33CC;
 }
 
 table td {
-    background-color: #f9f9f9;
+    background-color: #222222;
 }
 
 /* Botones en línea */
@@ -123,4 +126,9 @@ table td {
     .btn-submit, .btn {
         width: 100%;
     }
+}
+
+/* Estilo oculto para los campos */
+.hidden {
+    display: none;
 }
