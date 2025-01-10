@@ -8,32 +8,40 @@
     <script src="jsPDF.min.js"></script>  <!-- Librería jsPDF -->
 </head>
 <body>
-    <h1>Registro de Propinas</h1>
-    
-    <form id="form">
-        <label for="id_usuario">ID Usuario:</label>
-        <input type="number" id="id_usuario" required><br>
+    <div class="container">
+        <h1>Registro de Propinas</h1>
         
-        <label for="monto">Monto:</label>
-        <input type="number" id="monto" step="0.01" required><br>
-        
-        <button type="submit">Registrar Propina</button>
-    </form>
+        <form id="form">
+            <div class="form-group">
+                <label for="id_usuario">Nombre de Mesero:</label>
+                <input type="text" id="id_usuario" required placeholder="Nombre del mesero">
+            </div>
+            
+            <div class="form-group">
+                <label for="monto">Monto:</label>
+                <input type="number" id="monto" step="0.01" required placeholder="Monto de la propina">
+            </div>
+            
+            <button type="submit" class="btn-submit">Registrar Propina</button>
+        </form>
 
-    <h2>Propinas Registradas:</h2>
-    <table id="tabla-propinas">
-        <thead>
-            <tr>
-                <th>ID Usuario</th>
-                <th>Fecha</th>
-                <th>Monto</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <h2>Propinas Registradas:</h2>
+        <table id="tabla-propinas">
+            <thead>
+                <tr>
+                    <th>ID Usuario</th>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-    <button id="generar-pdf">Generar PDF</button>
-    <button id="imprimir-ticket">Imprimir Ticket</button>
+        <div class="btn-container">
+            <button id="generar-pdf" class="btn">Generar PDF</button>
+            <button id="imprimir-ticket" class="btn">Imprimir Ticket</button>
+        </div>
+    </div>
 
     <script src="script.js"></script> <!-- Enlazamos el archivo JavaScript -->
 </body>
