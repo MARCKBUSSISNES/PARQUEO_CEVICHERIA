@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Parqueo • Tickets 80mm con registro e históricos</title>
+<title>Parqueo • Tickets 80mm con registro</title>
 <style>
   :root{
     --bg:#0b0d11; --panel:#141820; --fg:#f5f5f5; --mut:#97a1b3;
@@ -11,7 +11,419 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);font-family:Segoe UI,Arial,sans-serif}
-  .header{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid #222}
-  .title{margin:0 auto;font-weight:900;letter-spacing:.08em;font-size:40px}
-  .stats{display:flex;gap:12px}
-  .
+
+  /* Header */
+  .header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid #222}
+  .title{margin-right:auto;font-weight:900;letter-spacing:.08em;font-size:34px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .pill{background:#1e2636;border:1px solid #2a3346;border-radius:999px;padding:6px 10px;font-weight:800}
+
+  /* Barra superior: código grande */
+  .topbar{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px 20px;border-bottom:1px solid #222;background:#111827;position:sticky;top:0;z-index:5}
+  .codeInput{height:64px;font-size:28px;font-weight:900;letter-spacing:.08em;border-radius:12px;border:2px solid #2b3345;background:#0c111b;color:#fff;padding:0 16px}
+  .btnBig{height:64px;padding:0 22px;border-radius:12px;border:2px solid #2a2f3c;background:#18301f;color:#dff7e7;font-weight:900;font-size:20px;cursor:pointer}
+  .btnBig:hover{filter:brightness(1.06)}
+
+  /* Layout principal: izquierda ancho completo, rail derecha fijo */
+  .wrap{display:grid;grid-template-columns:1fr 420px;gap:20px;max-width:1600px;margin:0 auto;padding:16px 20px}
+  .canvas,.rail{background:var(--panel);border:1px solid #1e2330;border-radius:16px}
+  .canvas{padding:18px}
+  .rail{padding:16px}
+  .rail h3{margin:0 0 10px;color:#aab2c2;font-size:13px;letter-spacing:.12em}
+
+  /* Botones de entrada: solo imagen, enormes */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .iconbtn{
+    border:3px solid var(--line); border-radius:18px;
+    background:linear-gradient(135deg,rgba(255,255,255,.02),transparent 40%),linear-gradient(315deg,rgba(229,22,47,.12),transparent 60%);
+    cursor:pointer; padding:18px; transition:.15s transform ease,.15s box-shadow ease; width:100%;
+  }
+  .iconbtn:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.25)}
+  .iconbtn svg{display:block;margin:0 auto;height:260px}
+
+  /* Listados derecha */
+  .list{font-size:18px;color:#cfd6e4;max-height:260px;overflow:auto;border-top:1px solid #232a3a;padding-top:10px}
+  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted #2a3244}
+  .codeNum{color:#000;background:#fff;border-radius:8px;padding:2px 10px;font-weight:900}
+  .typeTag{opacity:.9}
+
+  /* Grid XL de códigos debajo de la lista */
+  .gridDentro{margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-height:380px;overflow:auto}
+  .chip{
+    display:grid;place-items:center; border-radius:16px; font-weight:900; letter-spacing:.04em;
+    font-size:48px; height:110px; color:#000; border:3px solid #222;
+  }
+  .chip.moto{background:#c9ffd9}
+  .chip.carro{background:#ffe0e0}
+
+  /* Ventas y cierres (listas) */
+  .panelList{max-height:280px;overflow:auto;border-top:1px solid #232a3a;padding-top:10px}
+  .saleRow{display:grid;grid-template-columns:110px 1fr 90px;gap:8px;padding:6px 0;border-bottom:1px dotted #2a3244;font-weight:700}
+  .smallBtn{width:100%;padding:10px 12px;margin:8px 0;border-radius:10px;border:2px solid #2a2f3c;background:#1b2130;color:#e9eef8;font-weight:800;cursor:pointer}
+  .smallBtn.warn{background:#2b2416;border-color:#ffcc0022}
+  .smallBtn.danger{background:#2b1616;border-color:#ff3b3040}
+
+  .foot{text-align:center;color:#96a0b5;font-size:12px;padding:8px 16px}
+
+  /* Tickets 80mm */
+  #t-entrada,#t-venta{display:none}
+  .paper{width:80mm;background:#fff;color:#000}
+  .pad{padding:8mm 6mm}
+  .imgTop{display:block;margin:6mm auto 0;width:44mm}
+  h1{font:bold 18pt/1.1 Arial, sans-serif;text-align:center;margin:3mm 0 0}
+  h1 .small{display:block;font-size:14pt;margin-top:1mm}
+  .veh{font:bold 12pt/1.1 Arial;text-align:center;margin:3mm 0 0}
+  .label{font:bold 10pt Arial;margin:6mm 0 1mm}
+  .date{font:10pt Arial}
+  .time{font:bold 30pt Arial;text-align:center;margin:4mm 0 4mm}
+  .code-label{font:bold 12pt Arial;text-align:center;border-top:1px solid #000;padding-top:3mm;margin-top:4mm}
+  .code{font:bold 28pt Arial;text-align:center;letter-spacing:2pt;margin:1mm 0 2mm}
+  .total{font:bold 22pt Arial;text-align:center;margin:4mm 0 2mm}
+  .note{font:8pt Arial;text-align:center;margin:6mm 0 4mm}
+
+  /* Cierre (A4) */
+  #cierre{display:none;padding:30mm 20mm;font-family:Arial, sans-serif;color:#000}
+  #cierre h2{font:bold 32pt Arial;margin:0 0 6mm}
+  #cierre .fecha{font:16pt Arial;margin:0 0 6mm}
+  #cierre .box{border-top:2px solid #000;border-bottom:2px solid #000;padding:6mm 0;margin:6mm 0}
+  #cierre .big{font:bold 28pt Arial}
+  #cierre .sub{font:14pt Arial;color:#333}
+
+  @media print{
+    body{background:#fff}
+    .header,.topbar,.wrap,.foot{display:none!important}
+    @page{margin:0}
+    .paper{display:block}
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">PARQUEO</div>
+    <div class="stats">
+      <div class="pill" id="pm">Motos adentro: 0</div>
+      <div class="pill" id="pc">Carros adentro: 0</div>
+      <div class="pill" id="ps">Salidos hoy: 0</div>
+    </div>
+  </div>
+
+  <!-- BARRA SUPERIOR: CÓDIGO GRANDE -->
+  <div class="topbar">
+    <input id="codigoSalida" class="codeInput" placeholder="Escriba aquí el CÓDIGO y presione Enter" maxlength="8" inputmode="numeric" aria-label="Código de salida">
+    <button class="btnBig" onclick="salida()">Cobrar & Imprimir</button>
+  </div>
+
+  <div class="wrap">
+    <!-- IZQUIERDA: botones gigantes -->
+    <section class="canvas">
+      <div class="hero">
+        <button class="iconbtn" onclick="camaronMoto()" title="Camarón en MOTO">
+          <!-- Moto realista + camarón -->
+          <svg viewBox="0 0 512 256" aria-hidden="true">
+            <circle cx="120" cy="190" r="46" fill="#0a0a0a"/><circle cx="120" cy="190" r="26" fill="#e6e6e6"/>
+            <circle cx="370" cy="190" r="46" fill="#0a0a0a"/><circle cx="370" cy="190" r="26" fill="#e6e6e6"/>
+            <path d="M90 170h70l38-28 40-16h48l20 30h44l15 16h-92l-14-22h-30l-44 31h-95z" fill="#ffffff" opacity=".95"/>
+            <path d="M205 120c22-12 40-16 56-16 16 0 26 4 34 10l12 10h-58c-16 0-28 2-44 12z" fill="#ffffff"/>
+            <path d="M296 104l24-14 18 0" stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none"/>
+            <defs><linearGradient id="shrimpM" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient></defs>
+            <path d="M238 96c-20 0-36 16-36 36s16 36 36 36c26 0 48-22 48-48s-22-24-48-24z" fill="url(#shrimpM)"/>
+            <path d="M286 104c12 2 26 18 26 34s-6 26-18 32" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="254" cy="120" r="4" fill="#000"/>
+          </svg>
+        </button>
+
+        <button class="iconbtn" onclick="camaronCarro()" title="Camarón en CARRO">
+          <!-- Carro realista + camarón -->
+          <svg viewBox="0 0 512 256" aria-hidden="true">
+            <circle cx="140" cy="200" r="44" fill="#0a0a0a"/><circle cx="140" cy="200" r="22" fill="#e6e6e6"/>
+            <circle cx="380" cy="200" r="44" fill="#0a0a0a"/><circle cx="380" cy="200" r="22" fill="#e6e6e6"/>
+            <path d="M44 166h36l26-34c8-10 24-18 48-24l120-26c22-4 54 6 70 20l30 26h48c14 0 26 10 26 24v38H44z" fill="#ffffff" opacity=".95"/>
+            <path d="M178 100c30-22 86-26 118-20 16 4 34 16 44 26l20 20h-62l-18-20c-6-6-18-8-30-8h-72z" fill="#ffffff"/>
+            <defs><linearGradient id="shrimpC" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient></defs>
+            <path d="M232 86c-22 0-40 18-40 40s18 40 40 40c28 0 52-24 52-52s-24-28-52-28z" fill="url(#shrimpC)"/>
+            <path d="M284 96c14 3 30 20 30 38s-8 28-20 34" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="248" cy="98" r="4" fill="#000"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- DERECHA: listas y admin -->
+    <aside class="rail">
+      <h3>ADENTRO (lista)</h3>
+      <div class="list" id="listaDentro"></div>
+
+      <h3 style="margin-top:12px">ADENTRO (números grandes)</h3>
+      <div class="gridDentro" id="gridDentro"></div>
+
+      <h3 style="margin-top:12px">VENTAS DIARIAS</h3>
+      <button class="smallBtn" onclick="toggleVentasDia()">Mostrar/Ocultar ventas hoy</button>
+      <div class="panelList" id="ventasDia" style="display:none"></div>
+
+      <h3 style="margin-top:12px">HISTORIAL DE CIERRES</h3>
+      <button class="smallBtn" onclick="toggleCierres()">Mostrar/Ocultar cierres</button>
+      <div class="panelList" id="listaCierres" style="display:none"></div>
+
+      <h3 style="margin-top:12px">ADMIN</h3>
+      <button class="smallBtn warn" onclick="cierreVentas()">Imprimir Cierre (hoy)</button>
+      <button class="smallBtn danger" onclick="borrarVentasClave()">Borrar ventas (clave)</button>
+      <button class="smallBtn danger" onclick="borrarRegistrosClave()">Borrar registros (clave)</button>
+    </aside>
+  </div>
+
+  <div class="foot">© 2025 Marck Business. Todos los derechos reservados.</div>
+
+  <!-- TICKET ENTRADA -->
+  <section id="t-entrada" aria-hidden="true">
+    <div class="paper"><div class="pad">
+      <div id="e-img"></div>
+      <h1>TICKET DE<span class="small">PARQUEO</span></h1>
+      <div class="veh"  id="e-veh">MOTO</div>
+      <div class="label">HORA DE ENTRADA</div>
+      <div class="date" id="e-fecha"></div>
+      <div class="time" id="e-hora"></div>
+      <div class="code-label">CODIGO</div>
+      <div class="code" id="e-cod"></div>
+      <div class="note">*RECUERDE NO PERDER ESTE TICKET*</div>
+    </div></div>
+  </section>
+
+  <!-- TICKET VENTA -->
+  <section id="t-venta" aria-hidden="true">
+    <div class="paper"><div class="pad">
+      <div id="v-img"></div>
+      <h1>TICKET DE<span class="small">VENTA</span></h1>
+      <div class="veh"  id="v-veh">MOTO</div>
+      <div class="label">HORA DE ENTRADA</div>
+      <div class="date" id="v-fecha"></div>
+      <div class="time" id="v-hora"></div>
+      <div class="label" style="text-align:center">CODIGO</div>
+      <div class="code" id="v-cod"></div>
+      <div class="label" style="text-align:center">TOTAL</div>
+      <div class="total" id="v-total">Q0.00</div>
+      <div class="note">GRACIAS POR SU TIEMPO ESPERAMOS QUE VUELVA</div>
+    </div></div>
+  </section>
+
+  <!-- CIERRE (A4) -->
+  <section id="cierre" aria-hidden="true">
+    <h2>CIERRE DE<br>VENTAS</h2>
+    <div class="fecha" id="c-fecha"></div>
+    <div class="box"><div class="sub">TOTAL</div><div class="big" id="c-total">Q0.00</div></div>
+    <div class="sub">TOTAL DE VEHÍCULOS</div><div class="big" id="c-veh">0</div>
+  </section>
+
+<script>
+/* ======= Config & claves ======= */
+const PWD   = '22782522';
+const KEY_R = 'lp_parqueo_records_v3'; // registros (dentro/salido)
+const KEY_S = 'lp_parqueo_sales_v3';   // ventas acumuladas (persistentes)
+const KEY_C = 'lp_parqueo_cierres_v1'; // historial de cierres (persistente)
+const PRICE = { MOTO: 5, CARRO: 10 };
+
+let records = load(KEY_R) || [];
+let sales   = load(KEY_S) || [];
+let cierres = load(KEY_C) || [];
+let lastTicketSection = null;
+
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function save(){ localStorage.setItem(KEY_R, JSON.stringify(records)); localStorage.setItem(KEY_S, JSON.stringify(sales)); localStorage.setItem(KEY_C, JSON.stringify(cierres)); }
+
+/* ======= Utilidades ======= */
+function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
+function fechaLargaES(d){ return new Intl.DateTimeFormat('es-GT',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(d); }
+function horaES(d){ return new Intl.DateTimeFormat('es-GT',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m."); }
+function moneyQ(n){ return "Q" + n.toFixed(2); }
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+/* ======= SVG siluetas para tickets ======= */
+const SVG_MOTO_TICKET = `
+<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="120" cy="190" r="46" fill="#333"/><circle cx="120" cy="190" r="24" fill="#999"/>
+  <circle cx="370" cy="190" r="46" fill="#333"/><circle cx="370" cy="190" r="24" fill="#999"/>
+  <path d="M90 170h70l38-28 40-16h48l20 30h44l15 16h-92l-14-22h-30l-44 31h-95z" fill="#333"/>
+  <path d="M205 120c22-12 40-16 56-16 16 0 26 4 34 10l12 10h-58c-16 0-28 2-44 12z" fill="#333"/>
+  <path d="M296 104l24-14 18 0" stroke="#333" stroke-width="6" stroke-linecap="round" fill="none"/>
+</svg>`;
+const SVG_CARRO_TICKET = `
+<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="140" cy="200" r="44" fill="#333"/><circle cx="140" cy="200" r="22" fill="#999"/>
+  <circle cx="380" cy="200" r="44" fill="#333"/><circle cx="380" cy="200" r="22" fill="#999"/>
+  <path d="M44 166h36l26-34c8-10 24-18 48-24l120-26c22-4 54 6 70 20l30 26h48c14 0 26 10 26 24v38H44z" fill="#333"/>
+  <path d="M178 100c30-22 86-26 118-20 16 4 34 16 44 26l20 20h-62l-18-20c-6-6-18-8-30-8h-72z" fill="#333"/>
+</svg>`;
+
+/* ======= Entradas ======= */
+function entrada(tipo){
+  let code;
+  do { code = String(codigo4()); } while (records.some(r => r.estado==='DENTRO' && r.code===code));
+  const now = new Date();
+  const rec = { code, tipo, entrada: now.toISOString(), salida: null, totalQ: null, estado: 'DENTRO' };
+  records.push(rec); save(); actualizarUI();
+
+  // Ticket ENTRADA
+  document.getElementById('e-veh').textContent = tipo;
+  document.getElementById('e-fecha').textContent = fechaLargaES(now);
+  document.getElementById('e-hora').textContent  = horaES(now);
+  document.getElementById('e-cod').textContent   = code;
+  document.getElementById('e-img').innerHTML     = (tipo==='MOTO') ? SVG_MOTO_TICKET : SVG_CARRO_TICKET;
+
+  lastTicketSection = 't-entrada';
+  imprimir('t-entrada');
+}
+
+/* alias solicitados */
+function camaronMoto(){ entrada('MOTO'); }
+function camaronCarro(){ entrada('CARRO'); }
+
+/* ======= Salida (cobro) ======= */
+function salida(){
+  const code = (document.getElementById('codigoSalida').value||'').trim();
+  if(!code){ alert('Ingresa el código del vehículo.'); return; }
+  const rec = records.find(r => r.code===code && r.estado==='DENTRO');
+  if(!rec){ alert('Código no encontrado o ya salió.'); return; }
+
+  const now = new Date();
+  rec.salida = now.toISOString();
+  rec.totalQ = PRICE[rec.tipo];
+  rec.estado = 'SALIO';
+  sales.push({ whenISO: now.toISOString(), code: rec.code, tipo: rec.tipo, totalQ: rec.totalQ });
+  save(); actualizarUI();
+
+  // Ticket VENTA
+  document.getElementById('v-veh').textContent   = rec.tipo;
+  document.getElementById('v-fecha').textContent = fechaLargaES(now);
+  document.getElementById('v-hora').textContent  = horaES(now);
+  document.getElementById('v-cod').textContent   = rec.code;
+  document.getElementById('v-total').textContent = moneyQ(rec.totalQ);
+  document.getElementById('v-img').innerHTML     = (rec.tipo==='MOTO') ? SVG_MOTO_TICKET : SVG_CARRO_TICKET;
+
+  lastTicketSection = 't-venta';
+  document.getElementById('codigoSalida').value='';
+  imprimir('t-venta');
+}
+
+/* ======= Impresión ======= */
+function imprimirUltimo(){
+  if(!lastTicketSection){ alert('Aún no hay tickets generados.'); return; }
+  imprimir(lastTicketSection);
+}
+function imprimir(sectionId){
+  const secEntrada = document.getElementById('t-entrada');
+  const secVenta   = document.getElementById('t-venta');
+  const cierreView = document.getElementById('cierre');
+  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='none';
+  document.getElementById(sectionId).style.display='block';
+  setTimeout(()=>window.print(), 80);
+}
+
+/* ======= Cierre de ventas (guarda historial, NO borra ventas) ======= */
+function cierreVentas(){
+  const hoy = new Date();
+  const delDia = sales.filter(s => sameDay(new Date(s.whenISO), hoy));
+  const totalQ = delDia.reduce((a,s)=>a+s.totalQ, 0);
+  const totalN = delDia.length;
+
+  document.getElementById('c-fecha').textContent = new Intl.DateTimeFormat('es-GT',{dateStyle:'short', timeStyle:'short'}).format(hoy);
+  document.getElementById('c-total').textContent = moneyQ(totalQ);
+  document.getElementById('c-veh').textContent   = String(totalN);
+
+  // guardar en historial de cierres
+  cierres.push({ whenISO: hoy.toISOString(), totalQ, totalN });
+  save(); renderCierres();
+
+  const cierreView = document.getElementById('cierre');
+  const secEntrada = document.getElementById('t-entrada');
+  const secVenta   = document.getElementById('t-venta');
+  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='block';
+  setTimeout(()=>window.print(), 80);
+}
+
+/* ======= Admin con clave ======= */
+function pedirClave(msg){ const t = prompt(msg || 'Ingrese la clave:'); return t === PWD; }
+function borrarVentasClave(){
+  if(!pedirClave('Para BORRAR ventas acumuladas ingrese la clave:')) return;
+  sales = []; save(); renderVentasDia(); alert('Ventas borradas.');
+}
+function borrarRegistrosClave(){
+  if(!pedirClave('Para BORRAR registros de vehículos (dentro/salidos) ingrese la clave:')) return;
+  records = []; save(); actualizarUI(); alert('Registros borrados.');
+}
+
+/* ======= Vistas: ventas del día ======= */
+function toggleVentasDia(){
+  const el = document.getElementById('ventasDia');
+  if(el.style.display==='none'){ renderVentasDia(); el.style.display='block'; }
+  else{ el.style.display='none'; }
+}
+function renderVentasDia(){
+  const cont = document.getElementById('ventasDia');
+  const hoy = new Date();
+  const delDia = sales.filter(s => sameDay(new Date(s.whenISO), hoy));
+  if(delDia.length===0){ cont.innerHTML = '<i>No hay ventas hoy.</i>'; return; }
+  const rows = delDia
+    .sort((a,b)=>a.whenISO.localeCompare(b.whenISO))
+    .map(s=>{
+      const h = new Intl.DateTimeFormat('es-GT',{hour:'2-digit',minute:'2-digit',second:'2-digit', hour12:true}).format(new Date(s.whenISO));
+      return `<div class="saleRow"><div>${h}</div><div><span class="codeNum">${s.code}</span> • ${s.tipo}</div><div style="text-align:right">${moneyQ(s.totalQ)}</div></div>`;
+    }).join('');
+  cont.innerHTML = rows;
+}
+
+/* ======= Vistas: historial de cierres ======= */
+function toggleCierres(){
+  const el = document.getElementById('listaCierres');
+  if(el.style.display==='none'){ renderCierres(); el.style.display='block'; }
+  else{ el.style.display='none'; }
+}
+function renderCierres(){
+  const cont = document.getElementById('listaCierres');
+  if(!cierres.length){ cont.innerHTML = '<i>Sin cierres guardados.</i>'; return; }
+  const rows = [...cierres]
+    .sort((a,b)=>a.whenISO.localeCompare(b.whenISO))
+    .map(c=>{
+      const f = new Intl.DateTimeFormat('es-GT',{dateStyle:'short', timeStyle:'short'}).format(new Date(c.whenISO));
+      return `<div class="saleRow"><div>${f}</div><div>Cierre</div><div style="text-align:right">${moneyQ(c.totalQ)} / ${c.totalN}</div></div>`;
+    }).join('');
+  cont.innerHTML = rows;
+}
+
+/* ======= UI contadores + listas ======= */
+function actualizarUI(){
+  const dentro  = records.filter(r => r.estado==='DENTRO').sort((a,b)=>a.entrada.localeCompare(b.entrada));
+  const salidos = records.filter(r => r.estado==='SALIO');
+  const hoy = new Date();
+
+  const m = dentro.filter(r=>r.tipo==='MOTO').length;
+  const c = dentro.filter(r=>r.tipo==='CARRO').length;
+  document.getElementById('pm').textContent = `Motos adentro: ${m}`;
+  document.getElementById('pc').textContent = `Carros adentro: ${c}`;
+  document.getElementById('ps').textContent = `Salidos hoy: ${salidos.filter(r=>sameDay(new Date(r.salida||0), hoy)).length}`;
+
+  // Lista textual (código en NEGRO grande)
+  const lista = dentro.map(r =>
+    `<div class="row"><span class="codeNum">${r.code}</span><span class="typeTag">${r.tipo}</span></div>`
+  ).join('');
+  document.getElementById('listaDentro').innerHTML = lista || '<i>Sin vehículos</i>';
+
+  // Grid de números grandes
+  const grid = dentro.slice().reverse().map(r=>{
+    const cls = (r.tipo==='MOTO') ? 'moto' : 'carro';
+    return `<div class="chip ${cls}" title="${r.tipo}">${r.code}</div>`;
+  }).join('');
+  document.getElementById('gridDentro').innerHTML = grid || `<div class="chip" style="background:#ddd">—</div>`;
+
+  renderVentasDia(); // refresca panel ventas si está abierto
+}
+actualizarUI();
+
+/* ======= Atajos ======= */
+document.getElementById('codigoSalida').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ salida(); }
+});
+window.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.key.toLowerCase()==='p'){ e.preventDefault(); cierreVentas(); }
+});
+</script>
+</body>
+</html>
