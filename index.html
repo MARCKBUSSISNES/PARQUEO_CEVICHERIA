@@ -1,53 +1,209 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Propinas</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="jsPDF.min.js"></script>  <!-- Librería jsPDF -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Parqueo – Tickets 80mm</title>
+<style>
+  :root{
+    --bg:#0b0d11; --ink:#111; --fg:#f6f6f6; --accent:#e5162f; --accent2:#f3b000;
+    --panel:#141820; --line:#dd2b2b;
+    --screen-font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--screen-font)}
+  /* ======= PANTALLA (panel) ======= */
+  .header{
+    padding:18px 28px; display:flex; align-items:center; gap:24px;
+    background:
+      repeating-linear-gradient(90deg,#fff 0 36px, #fff 0 72px),
+      linear-gradient(0deg,transparent 0,transparent 36px,#fff 36px,#fff 72px,transparent 72px);
+    background-size:120px 72px,100% 72px;
+    background-position:center top, left top;
+    border-bottom:4px solid #2b2f3a;
+  }
+  .title{
+    margin-left:auto; margin-right:auto; text-align:center;
+    text-shadow:0 2px 0 #000, 0 0 24px rgba(0,0,0,.4);
+    font-weight:900; letter-spacing:.06em; font-size:54px; color:#fff;
+  }
+  .wrap{display:grid; grid-template-columns:280px 1fr; gap:24px; padding:24px; max-width:1400px; margin:0 auto}
+  .rail{background:var(--panel); border:1px solid #1e2330; border-radius:16px; padding:16px}
+  .rail h3{margin:0 0 12px; font-size:14px; color:#aab2c2; letter-spacing:.12em}
+  .btn{
+    width:100%; padding:14px 16px; margin:10px 0; border-radius:12px; border:2px solid #2a2f3c;
+    background:#1b2130; color:#e9eef8; font-weight:700; letter-spacing:.02em; cursor:pointer;
+    transition:.15s transform ease,.15s box-shadow ease; text-align:left;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .btn.blue{border-color:#3174ff22; background:#19253c}
+  .btn.green{border-color:#2dd36f33; background:#172a1f}
+  .btn.gold{border-color:#ffcc0022; background:#2a2417}
+  .canvas{
+    background:
+      radial-gradient(1200px 500px at 120% 120%, rgba(255,0,0,.08), transparent 60%),
+      radial-gradient(900px 400px at -10% 100%, rgba(255,0,0,.10), transparent 60%),
+      var(--panel);
+    border:1px solid #1e2330; border-radius:16px; padding:28px; min-height:560px;
+  }
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:24px}
+  .card{
+    border:3px solid var(--line); border-radius:18px; padding:24px; background:
+      linear-gradient(135deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%),
+      linear-gradient(315deg, rgba(229,22,47,.12), transparent 60%);
+    display:grid; grid-template-rows:1fr auto; align-items:center; cursor:pointer;
+    transition:.15s transform ease, .15s box-shadow ease;
+  }
+  .card:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.25)}
+  .card h2{margin:8px 0 0; font-size:56px; letter-spacing:.08em; text-align:center}
+  .card svg{display:block; margin:0 auto; height:180px}
+  .badge{width:56px;height:56px;border-radius:50%; background:var(--accent2); display:grid; place-items:center;
+         color:#000; font-weight:900; position:absolute; transform:translate(16px,-16px)}
+  .card-wrap{position:relative}
+  .footer{padding:8px 24px; text-align:center; color:#96a0b5; font-size:12px}
+
+  /* ======= TICKET 80mm ======= */
+  /* El contenedor del ticket existe siempre, pero se oculta en pantalla */
+  #ticket{display:none}
+  #ticket .paper{width:80mm; background:#fff; color:#000; padding:0; margin:0}
+  #ticket .pad{padding:8mm 6mm}
+  #ticket .logo{display:block; margin:8mm auto 2mm; width:46mm}
+  #ticket h1{font: bold 18pt/1.1 "Arial", sans-serif; text-align:center; margin:3mm 0 0}
+  #ticket h1 .small{display:block; font-size:14pt; margin-top:1mm}
+  #ticket .veh{font:bold 12pt/1.1 Arial, sans-serif; text-align:center; margin:3mm 0 0}
+  #ticket .label{font:bold 10pt Arial; margin:6mm 0 1mm}
+  #ticket .date{font:10pt Arial}
+  #ticket .time{font:bold 28pt Arial; text-align:center; margin:4mm 0 4mm}
+  #ticket .code-label{font:bold 12pt Arial; text-align:center; border-top:1px solid #000; padding-top:3mm; margin-top:4mm}
+  #ticket .code{font:bold 22pt Arial; text-align:center; letter-spacing:2pt; margin:1mm 0 2mm}
+  #ticket .note{font:8pt Arial; text-align:center; margin:6mm 0 4mm}
+  #ticket .imgTop{display:block; margin:6mm auto 0; width:40mm}
+
+  /* Ocultar todo menos el ticket al imprimir */
+  @media print{
+    body{background:#fff}
+    .header,.wrap,.footer{display:none !important}
+    #ticket{display:block}
+    @page{size:80mm auto; margin:0}
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Registro de Propinas</h1>
 
-        <button id="ver-datos" class="btn">Ver Datos (Contraseña)</button>
+  <!-- CABECERA -->
+  <div class="header">
+    <div style="width:120px;height:60px;display:grid;place-items:center;background:#0008;border:2px solid #fff;border-radius:12px">
+      <!-- F1 mini decorativo -->
+      <svg viewBox="0 0 128 64" width="96" aria-hidden="true">
+        <path d="M6 38h30l8-9h22l10 9h32v7H6z" fill="#e5162f"/>
+      </svg>
+    </div>
+    <div class="title">PARQUEO</div>
+  </div>
 
-        <!-- Formulario visible solo cuando se ingresa la contraseña -->
-        <form id="form" class="hidden">
-            <div class="form-group">
-                <label for="id_usuario">Nombre de Mesero:</label>
-                <input type="text" id="id_usuario" required placeholder="Nombre del mesero">
-            </div>
+  <!-- CONTENIDO -->
+  <div class="wrap">
+    <aside class="rail">
+      <h3>MENÚ</h3>
+      <button class="btn blue" onclick="goTicket('CARRO')">Ticket Carro</button>
+      <button class="btn blue" onclick="goTicket('MOTO')">Ticket Moto</button>
+      <button class="btn green" onclick="window.print()">Imprimir (último)</button>
+      <button class="btn gold" onclick="location.reload()">Limpiar / Reiniciar</button>
+    </aside>
 
-            <div class="form-group">
-                <label for="monto">Monto:</label>
-                <input type="number" id="monto" step="0.01" required placeholder="Monto de la propina">
-            </div>
-
-            <button type="submit" class="btn-submit">Registrar Propina</button>
-        </form>
-
-        <h2>Propinas Registradas:</h2>
-        <table id="tabla-propinas">
-            <thead>
-                <tr>
-                    <th>ID Usuario</th>
-                    <th>Fecha</th>
-                    <th>Monto</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <div class="btn-container">
-            <button id="generar-pdf" class="btn">Generar PDF</button>
-            <button id="imprimir-ticket" class="btn">Imprimir Ticket</button>
+    <main class="canvas">
+      <div class="cards">
+        <div class="card card-wrap" onclick="goTicket('MOTO')" title="Generar ticket para moto">
+          <div class="badge">⭣</div>
+          <!-- SVG moto -->
+          <svg viewBox="0 0 512 256" role="img" aria-label="Moto">
+            <path fill="#f04" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
+            <path fill="#fff" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
+          </svg>
+          <h2>MOTO</h2>
         </div>
 
-        <button id="borrar-datos" class="btn">Borrar Datos (Contraseña)</button>
-    </div>
+        <div class="card card-wrap" onclick="goTicket('CARRO')" title="Generar ticket para carro">
+          <div class="badge">⭣</div>
+          <!-- SVG carro -->
+          <svg viewBox="0 0 512 256" role="img" aria-label="Carro">
+            <path fill="#f04" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
+            <circle cx="140" cy="212" r="44" fill="#fff"/><circle cx="140" cy="212" r="22" fill="#f04"/>
+            <circle cx="388" cy="212" r="44" fill="#fff"/><circle cx="388" cy="212" r="22" fill="#f04"/>
+          </svg>
+          <h2>CARRO</h2>
+        </div>
+      </div>
+    </main>
+  </div>
 
-    <script src="script.js"></script> <!-- Enlazamos el archivo JavaScript -->
+  <div class="footer">© 2025 Marck Business. Todos los derechos reservados.</div>
+
+  <!-- ====== TICKET (SOLO SE VE EN IMPRESIÓN) ====== -->
+  <section id="ticket" aria-hidden="true">
+    <div class="paper">
+      <!-- imagen vehículo arriba (se inyecta SVG) -->
+      <div class="pad">
+        <div id="veh-icon"></div>
+        <h1>TICKET DE<span class="small">PARQUEO</span></h1>
+        <div class="veh" id="veh-name">CARRO</div>
+
+        <div class="label">HORA DE ENTRADA</div>
+        <div class="date" id="fechaLarga">viernes, 29 de agosto de 2025</div>
+        <div class="time" id="horaGrande">10:18:59 p. m.</div>
+
+        <div class="code-label">CODIGO</div>
+        <div class="code" id="codigo">8533</div>
+
+        <div class="note">*RECUERDE NO PERDER ESTE TICKET*</div>
+      </div>
+    </div>
+  </section>
+
+<script>
+  // ========= Utilidades =========
+  const carSVG =
+  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+     <path fill="#333" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
+     <circle cx="140" cy="212" r="44" fill="#666"/><circle cx="140" cy="212" r="22" fill="#333"/>
+     <circle cx="388" cy="212" r="44" fill="#666"/><circle cx="388" cy="212" r="22" fill="#333"/>
+   </svg>`;
+
+  const motoSVG =
+  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+     <path fill="#333" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
+     <path fill="#333" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
+   </svg>`;
+
+  function pad(n){return String(n).padStart(2,"0")}
+  function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
+
+  function fechaLargaES(d){
+    const f = new Intl.DateTimeFormat('es-GT', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    return f.format(d);
+  }
+  function horaES(d){
+    const f = new Intl.DateTimeFormat('es-GT', {hour:'numeric', minute:'2-digit', second:'2-digit', hour12:true});
+    // Forzar formato "p. m." / "a. m." de forma similar a tu ejemplo
+    return f.format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m.");
+  }
+
+  // ========= Generar ticket + imprimir =========
+  function goTicket(tipo){
+    // 1) set tipo
+    document.getElementById('veh-name').textContent = (tipo === 'MOTO') ? 'MOTO' : 'CARRO';
+    document.getElementById('veh-icon').innerHTML = (tipo === 'MOTO') ? motoSVG : carSVG;
+
+    // 2) fecha/hora/código
+    const now = new Date();
+    document.getElementById('fechaLarga').textContent = fechaLargaES(now);
+    document.getElementById('horaGrande').textContent  = horaES(now);
+    document.getElementById('codigo').textContent = codigo4();
+
+    // 3) imprimir
+    // Damos un microtiempo para que el DOM inyectado se renderice antes de imprimir
+    setTimeout(()=>window.print(), 150);
+  }
+</script>
 </body>
 </html>
