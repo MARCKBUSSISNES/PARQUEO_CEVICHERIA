@@ -1,135 +1,138 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Parqueo – Tickets 80mm</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parqueo • Tickets 80mm con registro</title>
 <style>
   :root{
-    --bg:#0b0d11; --ink:#111; --fg:#f6f6f6; --accent:#e5162f; --accent2:#f3b000;
-    --panel:#141820; --line:#dd2b2b;
-    --screen-font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    --bg:#0b0d11; --panel:#141820; --fg:#f5f5f5; --mut:#97a1b3;
+    --line:#dd2b2b; --accent:#e5162f; --gold:#f3b000; --ok:#3cc878; --blue:#3c8ce6;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--screen-font)}
-  /* ======= PANTALLA (panel) ======= */
-  .header{
-    padding:18px 28px; display:flex; align-items:center; gap:24px;
-    background:
-      repeating-linear-gradient(90deg,#fff 0 36px, #fff 0 72px),
-      linear-gradient(0deg,transparent 0,transparent 36px,#fff 36px,#fff 72px,transparent 72px);
-    background-size:120px 72px,100% 72px;
-    background-position:center top, left top;
-    border-bottom:4px solid #2b2f3a;
-  }
-  .title{
-    margin-left:auto; margin-right:auto; text-align:center;
-    text-shadow:0 2px 0 #000, 0 0 24px rgba(0,0,0,.4);
-    font-weight:900; letter-spacing:.06em; font-size:54px; color:#fff;
-  }
-  .wrap{display:grid; grid-template-columns:280px 1fr; gap:24px; padding:24px; max-width:1400px; margin:0 auto}
-  .rail{background:var(--panel); border:1px solid #1e2330; border-radius:16px; padding:16px}
-  .rail h3{margin:0 0 12px; font-size:14px; color:#aab2c2; letter-spacing:.12em}
-  .btn{
-    width:100%; padding:14px 16px; margin:10px 0; border-radius:12px; border:2px solid #2a2f3c;
-    background:#1b2130; color:#e9eef8; font-weight:700; letter-spacing:.02em; cursor:pointer;
-    transition:.15s transform ease,.15s box-shadow ease; text-align:left;
-  }
-  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.25)}
-  .btn.blue{border-color:#3174ff22; background:#19253c}
-  .btn.green{border-color:#2dd36f33; background:#172a1f}
-  .btn.gold{border-color:#ffcc0022; background:#2a2417}
-  .canvas{
-    background:
-      radial-gradient(1200px 500px at 120% 120%, rgba(255,0,0,.08), transparent 60%),
-      radial-gradient(900px 400px at -10% 100%, rgba(255,0,0,.10), transparent 60%),
-      var(--panel);
-    border:1px solid #1e2330; border-radius:16px; padding:28px; min-height:560px;
-  }
-  .cards{display:grid; grid-template-columns:1fr 1fr; gap:24px}
-  .card{
-    border:3px solid var(--line); border-radius:18px; padding:24px; background:
-      linear-gradient(135deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%),
-      linear-gradient(315deg, rgba(229,22,47,.12), transparent 60%);
-    display:grid; grid-template-rows:1fr auto; align-items:center; cursor:pointer;
-    transition:.15s transform ease, .15s box-shadow ease;
-  }
-  .card:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.25)}
-  .card h2{margin:8px 0 0; font-size:56px; letter-spacing:.08em; text-align:center}
-  .card svg{display:block; margin:0 auto; height:180px}
-  .badge{width:56px;height:56px;border-radius:50%; background:var(--accent2); display:grid; place-items:center;
-         color:#000; font-weight:900; position:absolute; transform:translate(16px,-16px)}
-  .card-wrap{position:relative}
-  .footer{padding:8px 24px; text-align:center; color:#96a0b5; font-size:12px}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:Segoe UI,Arial,sans-serif}
+  .header{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid #222}
+  .title{margin:0 auto;font-weight:900;letter-spacing:.08em;font-size:40px}
+  .stats{display:flex;gap:12px}
+  .pill{background:#1e2636;border:1px solid #2a3346;border-radius:999px;padding:6px 12px;font-weight:700}
+  .wrap{display:grid;grid-template-columns:300px 1fr;gap:24px;max-width:1400px;margin:0 auto;padding:24px}
+  .rail,.canvas{background:var(--panel);border:1px solid #1e2330;border-radius:16px}
+  .rail{padding:16px}
+  .rail h3{margin:0 0 10px;color:#aab2c2;font-size:13px;letter-spacing:.12em}
+  .btn{width:100%;padding:14px 16px;margin:8px 0;border-radius:12px;border:2px solid #2a2f3c;background:#1b2130;color:#e9eef8;font-weight:800;cursor:pointer}
+  .btn:hover{filter:brightness(1.05)}
+  .green{border-color:#2dd36f33;background:#172a1f}
+  .blue{border-color:#3174ff22;background:#18253b}
+  .gold{border-color:#ffcc0022;background:#2b2416}
+  .danger{border-color:#ff3b3040;background:#2b1616}
+  .canvas{padding:24px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .card{border:3px solid var(--line);border-radius:18px;padding:20px;background:linear-gradient(135deg,rgba(255,255,255,.02),transparent 40%),linear-gradient(315deg,rgba(229,22,47,.12),transparent 60%);cursor:pointer;transition:.15s transform ease,.15s box-shadow ease;position:relative}
+  .card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.25)}
+  .card h2{margin:8px 0 0;text-align:center;font-size:40px;letter-spacing:.08em}
+  .card svg{display:block;margin:0 auto;height:180px}
+  .badge{position:absolute;left:14px;top:14px;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#000;font-weight:900}
+  .exit{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:20px}
+  .exit input{padding:12px 14px;border-radius:10px;border:1px solid #2b3345;background:#111827;color:#e9eef8;font-weight:700;letter-spacing:.06em}
+  .list{margin-top:18px;font-size:14px;color:var(--mut)}
+  .list b{color:#fff}
+  .foot{text-align:center;color:#96a0b5;font-size:12px;padding:8px 16px}
 
-  /* ======= TICKET 80mm ======= */
-  /* El contenedor del ticket existe siempre, pero se oculta en pantalla */
-  #ticket{display:none}
-  #ticket .paper{width:80mm; background:#fff; color:#000; padding:0; margin:0}
-  #ticket .pad{padding:8mm 6mm}
-  #ticket .logo{display:block; margin:8mm auto 2mm; width:46mm}
-  #ticket h1{font: bold 18pt/1.1 "Arial", sans-serif; text-align:center; margin:3mm 0 0}
-  #ticket h1 .small{display:block; font-size:14pt; margin-top:1mm}
-  #ticket .veh{font:bold 12pt/1.1 Arial, sans-serif; text-align:center; margin:3mm 0 0}
-  #ticket .label{font:bold 10pt Arial; margin:6mm 0 1mm}
-  #ticket .date{font:10pt Arial}
-  #ticket .time{font:bold 28pt Arial; text-align:center; margin:4mm 0 4mm}
-  #ticket .code-label{font:bold 12pt Arial; text-align:center; border-top:1px solid #000; padding-top:3mm; margin-top:4mm}
-  #ticket .code{font:bold 22pt Arial; text-align:center; letter-spacing:2pt; margin:1mm 0 2mm}
-  #ticket .note{font:8pt Arial; text-align:center; margin:6mm 0 4mm}
-  #ticket .imgTop{display:block; margin:6mm auto 0; width:40mm}
+  /* ===== Tickets 80mm ===== */
+  #t-entrada,#t-venta{display:none}
+  .paper{width:80mm;background:#fff;color:#000}
+  .pad{padding:8mm 6mm}
+  .imgTop{display:block;margin:6mm auto 0;width:42mm}
+  h1{font:bold 18pt/1.1 Arial, sans-serif;text-align:center;margin:3mm 0 0}
+  h1 .small{display:block;font-size:14pt;margin-top:1mm}
+  .veh{font:bold 12pt/1.1 Arial;text-align:center;margin:3mm 0 0}
+  .label{font:bold 10pt Arial;margin:6mm 0 1mm}
+  .date{font:10pt Arial}
+  .time{font:bold 28pt Arial;text-align:center;margin:4mm 0 4mm}
+  .code-label{font:bold 12pt Arial;text-align:center;border-top:1px solid #000;padding-top:3mm;margin-top:4mm}
+  .code{font:bold 22pt Arial;text-align:center;letter-spacing:2pt;margin:1mm 0 2mm}
+  .total{font:bold 20pt Arial;text-align:center;margin:4mm 0 2mm}
+  .note{font:8pt Arial;text-align:center;margin:6mm 0 4mm}
 
-  /* Ocultar todo menos el ticket al imprimir */
+  /* ===== Cierre (A4) ===== */
+  #cierre{display:none;padding:30mm 20mm;font-family:Arial, sans-serif;color:#000}
+  #cierre h2{font:bold 32pt Arial;margin:0 0 6mm}
+  #cierre .fecha{font:16pt Arial;margin:0 0 6mm}
+  #cierre .box{border-top:2px solid #000;border-bottom:2px solid #000;padding:6mm 0;margin:6mm 0}
+  #cierre .big{font:bold 28pt Arial}
+  #cierre .sub{font:14pt Arial;color:#333}
   @media print{
     body{background:#fff}
-    .header,.wrap,.footer{display:none !important}
-    #ticket{display:block}
-    @page{size:80mm auto; margin:0}
+    .header,.wrap,.foot{display:none!important}
+    @page{margin:0}
+    .paper{display:block}
   }
 </style>
 </head>
 <body>
-
-  <!-- CABECERA -->
   <div class="header">
-    <div style="width:120px;height:60px;display:grid;place-items:center;background:#0008;border:2px solid #fff;border-radius:12px">
-      <!-- F1 mini decorativo -->
-      <svg viewBox="0 0 128 64" width="96" aria-hidden="true">
-        <path d="M6 38h30l8-9h22l10 9h32v7H6z" fill="#e5162f"/>
-      </svg>
-    </div>
     <div class="title">PARQUEO</div>
+    <div class="stats">
+      <div class="pill" id="pm">Motos adentro: 0</div>
+      <div class="pill" id="pc">Carros adentro: 0</div>
+      <div class="pill" id="ps">Salidos hoy: 0</div>
+    </div>
   </div>
 
-  <!-- CONTENIDO -->
   <div class="wrap">
     <aside class="rail">
-      <h3>MENÚ</h3>
-      <button class="btn blue" onclick="goTicket('CARRO')">Ticket Carro</button>
-      <button class="btn blue" onclick="goTicket('MOTO')">Ticket Moto</button>
-      <button class="btn green" onclick="window.print()">Imprimir (último)</button>
-      <button class="btn gold" onclick="location.reload()">Limpiar / Reiniciar</button>
+      <h3>ENTRADAS</h3>
+      <button class="btn blue" onclick="entrada('MOTO')">➤ Camarón en MOTO</button>
+      <button class="btn blue" onclick="entrada('CARRO')">➤ Camarón en CARRO</button>
+
+      <h3 style="margin-top:16px">SALIDA</h3>
+      <div class="exit">
+        <input id="codigoSalida" placeholder="Código (4 dígitos)" maxlength="8" inputmode="numeric">
+        <button class="btn green" onclick="salida()">Cobrar &amp; Imprimir</button>
+      </div>
+
+      <h3 style="margin-top:16px">ADMIN</h3>
+      <button class="btn gold" onclick="imprimirUltimo()">Reimprimir último ticket</button>
+      <button class="btn danger" onclick="cierreVentas()">CIERRE DE VENTAS</button>
+
+      <div class="list" id="listaDentro"></div>
     </aside>
 
     <main class="canvas">
       <div class="cards">
-        <div class="card card-wrap" onclick="goTicket('MOTO')" title="Generar ticket para moto">
+        <div class="card" onclick="entrada('MOTO')" title="Registrar entrada MOTO">
           <div class="badge">⭣</div>
-          <!-- SVG moto -->
-          <svg viewBox="0 0 512 256" role="img" aria-label="Moto">
-            <path fill="#f04" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
-            <path fill="#fff" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
+          <!-- Camarón en moto (SVG) -->
+          <svg viewBox="0 0 512 256" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient>
+            </defs>
+            <!-- moto -->
+            <path d="M150 120h70l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H220l-90-32z" fill="#fff"/>
+            <circle cx="100" cy="190" r="48" fill="#fff"/><circle cx="100" cy="190" r="22" fill="#f04"/>
+            <circle cx="380" cy="190" r="48" fill="#fff"/><circle cx="380" cy="190" r="22" fill="#f04"/>
+            <!-- camarón -->
+            <path d="M220 80c-20 0-36 16-36 36s16 36 36 36c26 0 48-22 48-48s-22-24-48-24z" fill="url(#g1)"/>
+            <path d="M268 88c12 2 26 18 26 34s-6 26-18 32" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="236" cy="104" r="4" fill="#000"/>
           </svg>
           <h2>MOTO</h2>
         </div>
-
-        <div class="card card-wrap" onclick="goTicket('CARRO')" title="Generar ticket para carro">
+        <div class="card" onclick="entrada('CARRO')" title="Registrar entrada CARRO">
           <div class="badge">⭣</div>
-          <!-- SVG carro -->
-          <svg viewBox="0 0 512 256" role="img" aria-label="Carro">
-            <path fill="#f04" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
+          <!-- Camarón en carro (SVG) -->
+          <svg viewBox="0 0 512 256" aria-hidden="true">
+            <defs>
+              <linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient>
+            </defs>
+            <!-- carro -->
+            <path d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z" fill="#fff"/>
             <circle cx="140" cy="212" r="44" fill="#fff"/><circle cx="140" cy="212" r="22" fill="#f04"/>
             <circle cx="388" cy="212" r="44" fill="#fff"/><circle cx="388" cy="212" r="22" fill="#f04"/>
+            <!-- camarón -->
+            <path d="M220 78c-22 0-40 18-40 40s18 40 40 40c28 0 52-24 52-52S248 78 220 78z" fill="url(#g2)"/>
+            <path d="M272 88c14 3 30 20 30 38s-8 28-20 34" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="238" cy="98" r="4" fill="#000"/>
           </svg>
           <h2>CARRO</h2>
         </div>
@@ -137,73 +140,209 @@
     </main>
   </div>
 
-  <div class="footer">© 2025 Marck Business. Todos los derechos reservados.</div>
+  <div class="foot">© 2025 Marck Business. Todos los derechos reservados.</div>
 
-  <!-- ====== TICKET (SOLO SE VE EN IMPRESIÓN) ====== -->
-  <section id="ticket" aria-hidden="true">
+  <!-- ========== Ticket ENTRADA (80mm) ========== -->
+  <section id="t-entrada" aria-hidden="true">
     <div class="paper">
-      <!-- imagen vehículo arriba (se inyecta SVG) -->
       <div class="pad">
-        <div id="veh-icon"></div>
+        <div id="e-img"></div>
         <h1>TICKET DE<span class="small">PARQUEO</span></h1>
-        <div class="veh" id="veh-name">CARRO</div>
-
+        <div class="veh" id="e-veh">MOTO</div>
         <div class="label">HORA DE ENTRADA</div>
-        <div class="date" id="fechaLarga">viernes, 29 de agosto de 2025</div>
-        <div class="time" id="horaGrande">10:18:59 p. m.</div>
-
+        <div class="date" id="e-fecha"></div>
+        <div class="time" id="e-hora"></div>
         <div class="code-label">CODIGO</div>
-        <div class="code" id="codigo">8533</div>
-
+        <div class="code" id="e-cod"></div>
         <div class="note">*RECUERDE NO PERDER ESTE TICKET*</div>
       </div>
     </div>
   </section>
 
+  <!-- ========== Ticket VENTA (80mm) ========== -->
+  <section id="t-venta" aria-hidden="true">
+    <div class="paper">
+      <div class="pad">
+        <div id="v-img"></div>
+        <h1>TICKET DE<span class="small">VENTA</span></h1>
+        <div class="veh" id="v-veh">MOTO</div>
+        <div class="label">HORA DE ENTRADA</div>
+        <div class="date" id="v-fecha"></div>
+        <div class="time" id="v-hora"></div>
+        <div class="label" style="text-align:center">CODIGO</div>
+        <div class="code" id="v-cod"></div>
+        <div class="label" style="text-align:center">TOTAL</div>
+        <div class="total" id="v-total">Q0.00</div>
+        <div class="note">GRACIAS POR SU TIEMPO ESPERAMOS QUE VUELVA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Cierre de Ventas (A4) ========== -->
+  <section id="cierre" aria-hidden="true">
+    <h2>CIERRE DE<br>VENTAS</h2>
+    <div class="fecha" id="c-fecha"></div>
+    <div class="box">
+      <div class="sub">TOTAL</div>
+      <div class="big" id="c-total">Q0.00</div>
+    </div>
+    <div class="sub">TOTAL DE VEHÍCULOS</div>
+    <div class="big" id="c-veh">0</div>
+  </section>
+
 <script>
-  // ========= Utilidades =========
-  const carSVG =
-  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-     <path fill="#333" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
-     <circle cx="140" cy="212" r="44" fill="#666"/><circle cx="140" cy="212" r="22" fill="#333"/>
-     <circle cx="388" cy="212" r="44" fill="#666"/><circle cx="388" cy="212" r="22" fill="#333"/>
-   </svg>`;
+/* =================== Datos & Persistencia =================== */
+const KEY = 'lp_parqueo_records_v1';
+const PRICE = { MOTO: 5, CARRO: 10 };
 
-  const motoSVG =
-  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-     <path fill="#333" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
-     <path fill="#333" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
-   </svg>`;
+let records = load();
+let lastTicketSection = null;
 
-  function pad(n){return String(n).padStart(2,"0")}
-  function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
+function load(){
+  try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(records)); }
 
-  function fechaLargaES(d){
-    const f = new Intl.DateTimeFormat('es-GT', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    return f.format(d);
-  }
-  function horaES(d){
-    const f = new Intl.DateTimeFormat('es-GT', {hour:'numeric', minute:'2-digit', second:'2-digit', hour12:true});
-    // Forzar formato "p. m." / "a. m." de forma similar a tu ejemplo
-    return f.format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m.");
-  }
+/* Registro:
+   { code, tipo:'MOTO'|'CARRO', entrada: ISO, salida: ISO|null, totalQ: number|null, estado:'DENTRO'|'SALIO' }
+*/
 
-  // ========= Generar ticket + imprimir =========
-  function goTicket(tipo){
-    // 1) set tipo
-    document.getElementById('veh-name').textContent = (tipo === 'MOTO') ? 'MOTO' : 'CARRO';
-    document.getElementById('veh-icon').innerHTML = (tipo === 'MOTO') ? motoSVG : carSVG;
+/* =================== Utilidades de formato =================== */
+function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
+function fechaLargaES(d){ return new Intl.DateTimeFormat('es-GT',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(d); }
+function horaES(d){ return new Intl.DateTimeFormat('es-GT',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m."); }
+function moneyQ(n){ return "Q" + n.toFixed(2); }
 
-    // 2) fecha/hora/código
-    const now = new Date();
-    document.getElementById('fechaLarga').textContent = fechaLargaES(now);
-    document.getElementById('horaGrande').textContent  = horaES(now);
-    document.getElementById('codigo').textContent = codigo4();
+/* =================== SVG Camarón =================== */
+const SVG_MOTO = `<img class="imgTop" alt="Camarón en moto" src="data:image/svg+xml;utf8,
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 256'>
+<defs><linearGradient id='g1' x1='0' x2='1'><stop offset='0' stop-color='%23ff7a7a'/><stop offset='1' stop-color='%23ff2a2a'/></linearGradient></defs>
+<path d='M150 120h70l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H220l-90-32z' fill='%23000'/>
+<circle cx='100' cy='190' r='48' fill='%23666'/><circle cx='100' cy='190' r='22' fill='%23000'/>
+<circle cx='380' cy='190' r='48' fill='%23666'/><circle cx='380' cy='190' r='22' fill='%23000'/>
+<path d='M220 80c-20 0-36 16-36 36s16 36 36 36c26 0 48-22 48-48s-22-24-48-24z' fill='url(%23g1)'/>
+<path d='M268 88c12 2 26 18 26 34s-6 26-18 32' fill='none' stroke='%23ffb3b3' stroke-width='6' stroke-linecap='round'/>
+<circle cx='236' cy='104' r='4' fill='%23000'/>
+</svg>"/>`;
 
-    // 3) imprimir
-    // Damos un microtiempo para que el DOM inyectado se renderice antes de imprimir
-    setTimeout(()=>window.print(), 150);
-  }
+const SVG_CARRO = `<img class="imgTop" alt="Camarón en carro" src="data:image/svg+xml;utf8,
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 256'>
+<defs><linearGradient id='g2' x1='0' x2='1'><stop offset='0' stop-color='%23ff7a7a'/><stop offset='1' stop-color='%23ff2a2a'/></linearGradient></defs>
+<path d='M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z' fill='%23000'/>
+<circle cx='140' cy='212' r='44' fill='%23666'/><circle cx='140' cy='212' r='22' fill='%23000'/>
+<circle cx='388' cy='212' r='44' fill='%23666'/><circle cx='388' cy='212' r='22' fill='%23000'/>
+<path d='M220 78c-22 0-40 18-40 40s18 40 40 40c28 0 52-24 52-52S248 78 220 78z' fill='url(%23g2)'/>
+<path d='M272 88c14 3 30 20 30 38s-8 28-20 34' fill='none' stroke='%23ffb3b3' stroke-width='6' stroke-linecap='round'/>
+<circle cx='238' cy='98' r='4' fill='%23000'/>
+</svg>"/>`;
+
+/* =================== UI: Entradas / Salidas =================== */
+function entrada(tipo){
+  // genera código único
+  let code;
+  do { code = String(codigo4()); } while (records.some(r => r.estado==='DENTRO' && r.code===code));
+
+  const now = new Date();
+  const rec = { code, tipo, entrada: now.toISOString(), salida: null, totalQ: null, estado: 'DENTRO' };
+  records.push(rec); save(); actualizarUI();
+
+  // preparar ticket de ENTRADA
+  document.getElementById('e-veh').textContent = tipo;
+  document.getElementById('e-fecha').textContent = fechaLargaES(now);
+  document.getElementById('e-hora').textContent  = horaES(now);
+  document.getElementById('e-cod').textContent   = code;
+  document.getElementById('e-img').innerHTML     = (tipo==='MOTO') ? SVG_MOTO : SVG_CARRO;
+
+  lastTicketSection = 't-entrada';
+  imprimir('t-entrada');
+}
+
+function salida(){
+  const code = (document.getElementById('codigoSalida').value||'').trim();
+  if(!code){ alert('Ingresa el código del vehículo.'); return; }
+
+  const rec = records.find(r => r.code===code && r.estado==='DENTRO');
+  if(!rec){ alert('Código no encontrado o ya salió.'); return; }
+
+  const now = new Date();
+  rec.salida = now.toISOString();
+  rec.totalQ = PRICE[rec.tipo];
+  rec.estado = 'SALIO';
+  save(); actualizarUI();
+
+  // preparar ticket de VENTA
+  document.getElementById('v-veh').textContent = rec.tipo;
+  document.getElementById('v-fecha').textContent = fechaLargaES(now);
+  document.getElementById('v-hora').textContent  = horaES(now);
+  document.getElementById('v-cod').textContent   = rec.code;
+  document.getElementById('v-total').textContent = moneyQ(rec.totalQ);
+  document.getElementById('v-img').innerHTML     = (rec.tipo==='MOTO') ? SVG_MOTO : SVG_CARRO;
+
+  lastTicketSection = 't-venta';
+  document.getElementById('codigoSalida').value='';
+  imprimir('t-venta');
+}
+
+function imprimirUltimo(){
+  if(!lastTicketSection){ alert('Aún no hay tickets generados.'); return; }
+  imprimir(lastTicketSection);
+}
+
+function imprimir(sectionId){
+  // Mostrar solo el ticket en impresión
+  const secEntrada = document.getElementById('t-entrada');
+  const secVenta   = document.getElementById('t-venta');
+  const cierreView = document.getElementById('cierre');
+  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='none';
+  document.getElementById(sectionId).style.display='block';
+  setTimeout(()=>window.print(), 100);
+}
+
+/* =================== Cierre de ventas =================== */
+function cierreVentas(){
+  // Sumar todo lo que SALIÓ
+  const salidos = records.filter(r => r.estado==='SALIO');
+  const totalQ  = salidos.reduce((a,r)=>a+(r.totalQ||0), 0);
+  const totalN  = salidos.length;
+
+  const now = new Date();
+  document.getElementById('c-fecha').textContent = new Intl.DateTimeFormat('es-GT',{dateStyle:'short', timeStyle:'short'}).format(now);
+  document.getElementById('c-total').textContent = moneyQ(totalQ);
+  document.getElementById('c-veh').textContent   = String(totalN);
+
+  // Mostrar cierre y mandar a imprimir
+  const cierreView = document.getElementById('cierre');
+  const secEntrada = document.getElementById('t-entrada');
+  const secVenta   = document.getElementById('t-venta');
+  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='block';
+  setTimeout(()=>{
+    window.print();
+    // Confirmar limpieza
+    setTimeout(()=>{
+      if(confirm('¿Confirmar CIERRE y limpiar registros?')){ records = []; save(); actualizarUI(); alert('Registros limpiados.'); }
+      cierreView.style.display='none';
+    }, 200);
+  }, 120);
+}
+
+/* =================== UI secundaria =================== */
+function actualizarUI(){
+  const dentro = records.filter(r => r.estado==='DENTRO');
+  const salidos = records.filter(r => r.estado==='SALIO');
+  const m = dentro.filter(r=>r.tipo==='MOTO').length;
+  const c = dentro.filter(r=>r.tipo==='CARRO').length;
+
+  document.getElementById('pm').textContent = `Motos adentro: ${m}`;
+  document.getElementById('pc').textContent = `Carros adentro: ${c}`;
+  document.getElementById('ps').textContent = `Salidos: ${salidos.length}`;
+
+  // Lista corta de adentro
+  const ul = dentro.slice(-8).map(r=>`<div>• <b>${r.tipo}</b> — código <b>${r.code}</b></div>`).join('');
+  document.getElementById('listaDentro').innerHTML = `<b>Últimos adentro:</b><br>${ul || '<i>Sin vehículos</i>'}`;
+}
+
+actualizarUI();
 </script>
 </body>
 </html>
+
