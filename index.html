@@ -9,7 +9,6 @@
     --bg-dark: #121212;
     --accent: #ff6600;
     --white: #ffffff;
-    --blue: #1e90ff;
 }
 
 * {
@@ -52,8 +51,8 @@ header {
 }
 
 .button-grid img {
-    width: 140px;
-    height: 140px;
+    width: 160px;
+    height: 160px;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -65,7 +64,7 @@ header {
 
 /* Listado de vehículos */
 .listado {
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     padding: 1rem;
     border-radius: 15px;
     width: 90%;
@@ -81,34 +80,33 @@ header {
     color: var(--accent);
 }
 
-/* Ticket visual */
-.ticket {
-    background: #fff;
-    color: #000;
-    width: 320px;
-    padding: 1.5rem;
-    border-radius: 10px;
-    font-family: monospace;
-    margin-top: 1rem;
-    display: none;
+/* Ticket de impresión */
+.ticket-print {
+    width: 280px; /* 80mm approx */
+    font-family: 'Courier New', monospace;
+    padding: 15px;
     text-align: center;
-    border: 2px dashed var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: #1a1a1a;
+    color: var(--white);
 }
 
-.ticket h2 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+.ticket-print h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--accent);
 }
 
-.ticket p {
-    font-size: 1.5rem;
-    margin: 0.3rem 0;
+.ticket-print p {
+    font-size: 18px;
+    margin: 6px 0;
 }
 
-.ticket img {
-    width: 60px;
-    height: 60px;
-    margin: 0.5rem 0;
+.ticket-print img {
+    width: 80px;
+    height: 80px;
+    margin: 10px 0;
 }
 
 /* Input para sacar vehículo */
@@ -129,17 +127,9 @@ footer {
     border-radius: 10px;
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(20px);}
-    to {opacity:1; transform:translateY(0);}
-}
-.animate { animation: fadeIn 0.8s ease forwards; }
-
 /* Responsivo */
 @media(max-width:600px){
-    .button-grid img { width:120px; height:120px; }
-    .ticket { width: 280px; font-size:1.2rem; }
+    .button-grid img { width:140px; height:140px; }
 }
 </style>
 </head>
@@ -153,7 +143,7 @@ footer {
         <img src="CARRO.png" alt="Carro" id="btnCarro">
         <img src="MOTO.png" alt="Moto" id="btnMoto">
         <img src="SALIDA.png" alt="Salida" id="btnSalida">
-        <button id="btnCierre" style="padding:0.7rem 1.5rem;font-size:1.3rem;border-radius:10px;background:var(--accent);color:var(--white);border:none;cursor:pointer;">Cierre Día</button>
+        <button id="btnCierre" style="padding:0.7rem 1.5rem;font-size:1.3rem;border-radius:10px;background:#ff6600;color:#fff;border:none;cursor:pointer;">Cierre Día</button>
     </div>
 
     <div class="listado">
@@ -163,21 +153,20 @@ footer {
 
     <input type="text" id="codigoSalida" class="salida-input" placeholder="Ingrese código para salida">
 
-    <div class="ticket" id="ticket"></div>
-
 </div>
 
 <footer>*POR FAVOR NO PIERDA ESTE DOCUMENTO*</footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const vehiculos = JSON.parse(localStorage.getItem('vehiculos') || '[]');
+const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre') || '[]');
 const lista = document.getElementById('vehiculosList');
-const ticketDiv = document.getElementById('ticket');
 const codigoSalida = document.getElementById('codigoSalida');
 const btnCierre = document.getElementById('btnCierre');
 
 function guardarLocal() { localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
+function guardarCierre() { localStorage.setItem('vehiculosCierre', JSON.stringify(vehiculosCierre)); }
+
 function actualizarLista() {
     lista.innerHTML = '';
     vehiculos.forEach(v => {
@@ -189,32 +178,40 @@ function actualizarLista() {
 
 function generarCodigo() {
     let codigo;
-    do {
-        codigo = Math.floor(1000 + Math.random()*9000);
-    } while(vehiculos.some(v => v.codigo===codigo));
+    do { codigo = Math.floor(1000 + Math.random()*9000); }
+    while(vehiculos.some(v => v.codigo===codigo));
     return codigo;
+}
+
+function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
+    const contenido = `
+        <div class="ticket-print">
+            <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
+            <img src="${tipo}.png" alt="${tipo}">
+            <p>${simbolo} Código: <strong style="font-size:22px;">${codigo}</strong></p>
+            <p>Hora: ${hora}</p>
+            ${!ingreso?`<p>Tarifa: <strong style="font-size:22px;">Q${tipo==='CARRO'?10:5}.00</strong></p>`:''}
+            <p style="font-size:16px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+        </div>
+    `;
+    const ventana = window.open('', '_blank', 'width=300,height=500');
+    ventana.document.write(contenido);
+    ventana.document.close();
+    ventana.focus();
+    ventana.print();
+    ventana.close();
 }
 
 function agregarVehiculo(tipo) {
     const codigo = generarCodigo();
     const hora = new Date().toLocaleString();
     const simbolo = tipo==='CARRO'?'🚗':'🏍️';
-    vehiculos.push({codigo, hora, tipo, simbolo});
-    guardarLocal();
+    const veh = {codigo, hora, tipo, simbolo};
+    vehiculos.push(veh);
+    vehiculosCierre.push(veh);
+    guardarLocal(); guardarCierre();
     actualizarLista();
-    mostrarTicket(codigo, simbolo, hora, tipo, true);
-}
-
-function mostrarTicket(codigo, simbolo, hora, tipo, ingreso=false){
-    ticketDiv.style.display='block';
-    ticketDiv.innerHTML = `
-        <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
-        <img src="${tipo}.png" alt="${tipo}">
-        <p>${simbolo} Código: ${codigo}</p>
-        <p>Hora: ${hora}</p>
-        ${!ingreso?`<p>Tarifa: Q${tipo==='CARRO'?10:5}.00</p>`:''}
-    `;
-    setTimeout(()=>ticketDiv.style.display='none',5000);
+    imprimirTicket(codigo, simbolo, hora, tipo, true);
 }
 
 function salidaVehiculo() {
@@ -225,40 +222,42 @@ function salidaVehiculo() {
     const v = vehiculos.splice(index,1)[0];
     guardarLocal();
     actualizarLista();
-    mostrarTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
+    imprimirTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
     codigoSalida.value='';
 }
 
-// Evento botones
+// Eventos
 document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
 document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
 document.getElementById('btnSalida').addEventListener('click', salidaVehiculo);
-
 actualizarLista();
 
-// Cierre y PDF
+// Cierre
 btnCierre.addEventListener('click', ()=>{
-    if(vehiculos.length>0) return alert('No se puede realizar el cierre: todavía hay vehículos dentro.');
-    const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre') || '[]');
+    if(vehiculos.length>0) return alert('No se puede realizar el cierre: aún hay vehículos dentro.');
     let totalCarros = 0, totalMotos = 0, totalMonto = 0;
     vehiculosCierre.forEach(v=>{
         if(v.tipo==='CARRO'){ totalCarros++; totalMonto+=10; }
         else { totalMotos++; totalMonto+=5; }
     });
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({unit:'pt', format:[400,600]});
-    doc.setFontSize(20);
-    doc.text("🦐 PARQUEO CEVICHERÍA 🦐", 40, 40);
-    doc.setFontSize(16);
-    doc.text(`Total Carros: ${totalCarros}`, 40, 80);
-    doc.text(`Total Motos: ${totalMotos}`, 40, 110);
-    doc.text(`Total Recaudado: Q${totalMonto}.00`, 40, 140);
-    doc.save(`cierre_parqueo_${new Date().toLocaleDateString()}.pdf`);
+    const contenido = `
+        <div class="ticket-print" style="font-size:20px;">
+            <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
+            <p>Total Carros: <strong>${totalCarros}</strong></p>
+            <p>Total Motos: <strong>${totalMotos}</strong></p>
+            <p>Total Recaudado: <strong>Q${totalMonto}.00</strong></p>
+            <p style="font-size:16px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+        </div>
+    `;
+    const ventana = window.open('', '_blank', 'width=400,height=600');
+    ventana.document.write(contenido);
+    ventana.document.close();
+    ventana.focus();
+    ventana.print();
+    ventana.close();
     localStorage.removeItem('vehiculosCierre');
-    actualizarLista();
 });
 </script>
 
 </body>
 </html>
-
