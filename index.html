@@ -151,9 +151,6 @@ footer {
 
 <footer>*POR FAVOR NO PIERDA ESTE DOCUMENTO*</footer>
 
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <script>
 const vehiculos = JSON.parse(localStorage.getItem('vehiculos') || '[]');
 const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre') || '[]');
@@ -180,10 +177,10 @@ function generarCodigo() {
     return codigo;
 }
 
-// **Ticket de impresión 80mm**
-function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
+// Ticket de impresión 80mm
+function imprimirTicketHTML(codigo, simbolo, hora, tipo, ingreso=true){
     const ticketHTML = `
-        <div style="width:280px; padding:15px; text-align:center; font-family:monospace;">
+        <div style="width:280px; padding:20px; text-align:center; font-family:monospace;">
             <h1 style="font-size:28px; margin-bottom:10px;">🦐 PARQUEO CEVICHERÍA 🦐</h1>
             <p style="font-size:26px; margin:5px;">${simbolo}</p>
             <p style="font-size:26px; margin:5px;">Código: <strong>${codigo}</strong></p>
@@ -209,7 +206,7 @@ function agregarVehiculo(tipo) {
     vehiculosCierre.push(veh);
     guardarLocal(); guardarCierre();
     actualizarLista();
-    imprimirTicket(codigo, simbolo, hora, tipo, true);
+    imprimirTicketHTML(codigo, simbolo, hora, tipo, true);
 }
 
 function salidaVehiculo() {
@@ -220,7 +217,7 @@ function salidaVehiculo() {
     const v = vehiculos.splice(index,1)[0];
     guardarLocal();
     actualizarLista();
-    imprimirTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
+    imprimirTicketHTML(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
     codigoSalida.value='';
     codigoSalida.focus();
 }
@@ -228,34 +225,36 @@ function salidaVehiculo() {
 // Eventos
 document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
 document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
-codigoSalida.addEventListener('keypress', (e)=>{
-    if(e.key==='Enter') salidaVehiculo();
-});
+codigoSalida.addEventListener('keypress', (e)=>{ if(e.key==='Enter') salidaVehiculo(); });
 actualizarLista();
 
-// **Cierre con PDF**
-btnCierreImg.addEventListener('click', async ()=>{
+// Cierre con ticket 80mm
+btnCierreImg.addEventListener('click', ()=> {
     if(vehiculos.length>0) return alert('No se puede realizar el cierre: aún hay vehículos dentro.');
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("🦐 PARQUEO CEVICHERÍA 🦐", 105, 20, {align: 'center'});
-    let y=40;
     let totalCarros=0, totalMotos=0, totalMonto=0;
+    const horaCierre = new Date().toLocaleString();
+    let ticketHTML = `<div style="width:280px; padding:20px; text-align:center; font-family:monospace;">
+        <h1 style="font-size:28px; margin-bottom:10px;">🦐 PARQUEO CEVICHERÍA 🦐</h1>
+        <p style="font-size:26px; margin:5px;">Cierre del Día</p>
+        <p style="font-size:22px; margin:5px;">Hora: <strong>${horaCierre}</strong></p>
+        <hr style="border:1px dashed var(--accent); margin:10px 0;">
+    `;
     vehiculosCierre.forEach(v=>{
-        doc.setFontSize(16);
-        doc.text(`${v.simbolo}  Código: ${v.codigo}  Hora: ${v.hora}`, 10, y);
-        if(v.tipo==='CARRO'){ totalCarros++; totalMonto+=10; } 
-        else { totalMotos++; totalMonto+=5; }
-        y+=10;
+        ticketHTML += `<p style="font-size:24px; margin:5px;">${v.simbolo}  Código: ${v.codigo}  Hora: ${v.hora}</p>`;
+        if(v.tipo==='CARRO'){ totalCarros++; totalMonto+=10; } else { totalMotos++; totalMonto+=5; }
     });
-    y+=10;
-    doc.setFontSize(18);
-    doc.text(`Total Carros: ${totalCarros}`,10,y); y+=10;
-    doc.text(`Total Motos: ${totalMotos}`,10,y); y+=10;
-    doc.text(`Monto Total: Q${totalMonto}.00`,10,y); y+=20;
-    doc.text("*POR FAVOR NO PIERDA ESTE DOCUMENTO*",105,y,{align:'center'});
-    doc.save(`Cierre_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`);
+    ticketHTML += `<hr style="border:1px dashed var(--accent); margin:10px 0;">
+        <p style="font-size:24px; margin:5px;">Total Carros: ${totalCarros}</p>
+        <p style="font-size:24px; margin:5px;">Total Motos: ${totalMotos}</p>
+        <p style="font-size:26px; margin:5px;">Monto Total: Q${totalMonto}.00</p>
+        <p style="font-size:18px; margin-top:10px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+    </div>`;
+    const win = window.open('', '_blank', 'width=300,height=800');
+    win.document.write(ticketHTML);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
     localStorage.removeItem('vehiculos'); localStorage.removeItem('vehiculosCierre');
     vehiculos.length=0; vehiculosCierre.length=0; actualizarLista();
     codigoSalida.focus();
@@ -264,4 +263,5 @@ btnCierreImg.addEventListener('click', async ()=>{
 
 </body>
 </html>
+
 
