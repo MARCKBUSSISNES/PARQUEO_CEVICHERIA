@@ -22,6 +22,7 @@ body {
     background: url('121212.png') center/cover no-repeat fixed;
     color: var(--white);
     min-height: 100vh;
+    position: relative;
 }
 
 header {
@@ -31,6 +32,22 @@ header {
     font-size: 1.8rem;
     font-weight: bold;
     box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+/* Botón Cierre como imagen en esquina */
+#btnCierreImg {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+#btnCierreImg:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--accent);
 }
 
 .container {
@@ -44,23 +61,23 @@ header {
 /* Botones grandes */
 .button-grid {
     display: flex;
-    gap: 2rem;
+    gap: 3rem;
     flex-wrap: wrap;
     justify-content: center;
 }
 
-.button-grid img, .button-grid button {
-    width: 180px;
-    height: 180px;
-    font-size: 1.3rem;
+.button-grid img {
+    width: 220px;
+    height: 220px;
+    font-size: 1.5rem;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
     border-radius: 15px;
 }
 
-.button-grid img:hover, .button-grid button:hover {
+.button-grid img:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 20px var(--accent);
+    box-shadow: 0 0 25px var(--accent);
 }
 
 /* Listado de vehículos */
@@ -83,14 +100,14 @@ header {
 }
 
 .listado ul li {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin: 0.5rem 0;
 }
 
 /* Input para sacar vehículo */
 .salida-input {
-    padding: 1rem;
-    font-size: 2rem;
+    padding: 1.2rem;
+    font-size: 2.2rem;
     border-radius: 15px;
     border: none;
     text-align: center;
@@ -101,7 +118,7 @@ header {
 /* Ticket de impresión */
 .ticket-print {
     width: 280px; /* 80mm approx */
-    padding: 15px;
+    padding: 20px;
     text-align: center;
     border: 2px solid var(--accent);
     border-radius: 10px;
@@ -110,13 +127,13 @@ header {
 }
 
 .ticket-print h2 {
-    font-size: 24px;
+    font-size: 26px;
     margin-bottom: 15px;
     color: var(--accent);
 }
 
 .ticket-print p {
-    font-size: 22px;
+    font-size: 24px;
     margin: 8px 0;
 }
 
@@ -130,23 +147,23 @@ footer {
 
 /* Responsivo */
 @media(max-width:600px){
-    .button-grid img, .button-grid button { width:140px; height:140px; font-size:1rem; }
-    .listado ul li { font-size: 1.5rem; }
-    .salida-input { font-size: 1.5rem; }
+    .button-grid img { width:180px; height:180px; }
+    .listado ul li { font-size: 2rem; }
+    .salida-input { font-size: 1.8rem; }
 }
 </style>
 </head>
 <body>
 
-<header>🦐 PARQUEO CEVICHERÍA 🦐</header>
+<header>🦐 PARQUEO CEVICHERÍA 🦐
+    <img src="CIERREE.png" alt="Cierre Día" id="btnCierreImg">
+</header>
 
 <div class="container">
 
     <div class="button-grid">
         <img src="CARRO.png" alt="Carro" id="btnCarro">
         <img src="MOTO.png" alt="Moto" id="btnMoto">
-        <button id="btnSalida" style="background:#ff6600;color:#fff;font-weight:bold;">SALIDA</button>
-        <button id="btnCierre" style="background:#ff6600;color:#fff;font-weight:bold;">Cierre Día</button>
     </div>
 
     <input type="text" id="codigoSalida" class="salida-input" placeholder="Ingrese código para salida">
@@ -165,7 +182,7 @@ const vehiculos = JSON.parse(localStorage.getItem('vehiculos') || '[]');
 const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre') || '[]');
 const lista = document.getElementById('vehiculosList');
 const codigoSalida = document.getElementById('codigoSalida');
-const btnCierre = document.getElementById('btnCierre');
+const btnCierreImg = document.getElementById('btnCierreImg');
 
 function guardarLocal() { localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
 function guardarCierre() { localStorage.setItem('vehiculosCierre', JSON.stringify(vehiculosCierre)); }
@@ -233,14 +250,13 @@ function salidaVehiculo() {
 // Eventos
 document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
 document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
-document.getElementById('btnSalida').addEventListener('click', ()=>{codigoSalida.focus();});
 codigoSalida.addEventListener('keypress', (e)=>{
     if(e.key==='Enter') salidaVehiculo();
 });
 actualizarLista();
 
 // Cierre
-btnCierre.addEventListener('click', ()=>{
+btnCierreImg.addEventListener('click', ()=>{
     if(vehiculos.length>0) return alert('No se puede realizar el cierre: aún hay vehículos dentro.');
     let totalCarros = 0, totalMotos = 0, totalMonto = 0;
     vehiculosCierre.forEach(v=>{
