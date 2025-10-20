@@ -52,8 +52,8 @@ header {
 }
 
 .button-grid img {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -85,23 +85,36 @@ header {
 .ticket {
     background: #fff;
     color: #000;
-    width: 280px;
-    padding: 1rem;
+    width: 320px;
+    padding: 1.5rem;
     border-radius: 10px;
     font-family: monospace;
     margin-top: 1rem;
     display: none;
+    text-align: center;
+    border: 2px dashed var(--accent);
 }
 
-.ticket h3 {
-    text-align: center;
+.ticket h2 {
+    font-size: 1.8rem;
     margin-bottom: 0.5rem;
+}
+
+.ticket p {
+    font-size: 1.5rem;
+    margin: 0.3rem 0;
+}
+
+.ticket img {
+    width: 60px;
+    height: 60px;
+    margin: 0.5rem 0;
 }
 
 /* Input para sacar vehículo */
 .salida-input {
-    padding: 0.5rem;
-    font-size: 1rem;
+    padding: 0.7rem;
+    font-size: 1.2rem;
     border-radius: 10px;
     border: none;
     text-align: center;
@@ -125,7 +138,8 @@ footer {
 
 /* Responsivo */
 @media(max-width:600px){
-    .button-grid img { width:100px; height:100px; }
+    .button-grid img { width:120px; height:120px; }
+    .ticket { width: 280px; font-size:1.2rem; }
 }
 </style>
 </head>
@@ -139,6 +153,7 @@ footer {
         <img src="CARRO.png" alt="Carro" id="btnCarro">
         <img src="MOTO.png" alt="Moto" id="btnMoto">
         <img src="SALIDA.png" alt="Salida" id="btnSalida">
+        <button id="btnCierre" style="padding:0.7rem 1.5rem;font-size:1.3rem;border-radius:10px;background:var(--accent);color:var(--white);border:none;cursor:pointer;">Cierre Día</button>
     </div>
 
     <div class="listado">
@@ -160,6 +175,7 @@ const vehiculos = JSON.parse(localStorage.getItem('vehiculos') || '[]');
 const lista = document.getElementById('vehiculosList');
 const ticketDiv = document.getElementById('ticket');
 const codigoSalida = document.getElementById('codigoSalida');
+const btnCierre = document.getElementById('btnCierre');
 
 function guardarLocal() { localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
 function actualizarLista() {
@@ -186,16 +202,17 @@ function agregarVehiculo(tipo) {
     vehiculos.push({codigo, hora, tipo, simbolo});
     guardarLocal();
     actualizarLista();
-    mostrarTicket(codigo, simbolo, hora, tipo);
+    mostrarTicket(codigo, simbolo, hora, tipo, true);
 }
 
-function mostrarTicket(codigo, simbolo, hora, tipo){
+function mostrarTicket(codigo, simbolo, hora, tipo, ingreso=false){
     ticketDiv.style.display='block';
     ticketDiv.innerHTML = `
-        <h3>🦐 PARQUEO CEVICHERÍA 🦐</h3>
+        <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
+        <img src="${tipo}.png" alt="${tipo}">
         <p>${simbolo} Código: ${codigo}</p>
         <p>Hora: ${hora}</p>
-        <p>Tarifa: Q${tipo==='CARRO'?10:5}.00</p>
+        ${!ingreso?`<p>Tarifa: Q${tipo==='CARRO'?10:5}.00</p>`:''}
     `;
     setTimeout(()=>ticketDiv.style.display='none',5000);
 }
@@ -208,10 +225,11 @@ function salidaVehiculo() {
     const v = vehiculos.splice(index,1)[0];
     guardarLocal();
     actualizarLista();
-    mostrarTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo);
+    mostrarTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
     codigoSalida.value='';
 }
 
+// Evento botones
 document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
 document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
 document.getElementById('btnSalida').addEventListener('click', salidaVehiculo);
@@ -219,27 +237,28 @@ document.getElementById('btnSalida').addEventListener('click', salidaVehiculo);
 actualizarLista();
 
 // Cierre y PDF
-function cierreDia() {
-    if(vehiculos.length===0) return alert('No hay vehículos en el sistema');
+btnCierre.addEventListener('click', ()=>{
+    if(vehiculos.length>0) return alert('No se puede realizar el cierre: todavía hay vehículos dentro.');
+    const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre') || '[]');
     let totalCarros = 0, totalMotos = 0, totalMonto = 0;
-    vehiculos.forEach(v=>{
+    vehiculosCierre.forEach(v=>{
         if(v.tipo==='CARRO'){ totalCarros++; totalMonto+=10; }
         else { totalMotos++; totalMonto+=5; }
     });
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF({unit:'pt', format:[400,600]});
+    doc.setFontSize(20);
+    doc.text("🦐 PARQUEO CEVICHERÍA 🦐", 40, 40);
     doc.setFontSize(16);
-    doc.text("🦐 PARQUEO CEVICHERÍA 🦐", 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Total Carros: ${totalCarros}`, 20, 40);
-    doc.text(`Total Motos: ${totalMotos}`, 20, 50);
-    doc.text(`Total Recaudado: Q${totalMonto}.00`, 20, 60);
+    doc.text(`Total Carros: ${totalCarros}`, 40, 80);
+    doc.text(`Total Motos: ${totalMotos}`, 40, 110);
+    doc.text(`Total Recaudado: Q${totalMonto}.00`, 40, 140);
     doc.save(`cierre_parqueo_${new Date().toLocaleDateString()}.pdf`);
-    localStorage.removeItem('vehiculos');
+    localStorage.removeItem('vehiculosCierre');
     actualizarLista();
-}
-
+});
 </script>
 
 </body>
 </html>
+
