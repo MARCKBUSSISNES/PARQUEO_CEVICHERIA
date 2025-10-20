@@ -3,263 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🦐 PARQUEO CEVICHERÍA</title>
+<title>🦐 PARQUEO CEVICHERÍA 🦐</title>
 <style>
+:root {
+    --bg-dark: #121212;
+    --accent: #ff6600;
+    --white: #ffffff;
+    --blue: #1e90ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
 body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: url('121212.png') no-repeat center center fixed;
-  background-size: cover;
-  color: #fff;
-  overflow-x: hidden;
+    background: url('121212.png') center/cover no-repeat fixed;
+    color: var(--white);
+    height: 100vh;
+    overflow-x: hidden;
 }
 
 header {
-  text-align: center;
-  background: rgba(0,0,0,0.8);
-  padding: 20px;
-  font-size: 2rem;
-  color: gold;
-  font-weight: bold;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    background-color: #000;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 1rem;
 }
 
-.buttons {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 40px;
+/* Botones grandes */
+.button-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-.buttons img {
-  width: 160px;
-  height: 160px;
-  cursor: pointer;
-  transition: transform 0.2s;
-  border-radius: 20px;
-  box-shadow: 0 0 20px rgba(255,215,0,0.4);
-}
-.buttons img:hover {
-  transform: scale(1.1);
+.button-grid img {
+    width: 120px;
+    height: 120px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
+.button-grid img:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px var(--accent);
+}
+
+/* Listado de vehículos */
 .listado {
-  background: rgba(0,0,0,0.7);
-  border-radius: 15px;
-  padding: 20px;
-  width: 90%;
-  max-width: 600px;
-  box-shadow: 0 0 20px rgba(255,215,0,0.2);
+    background: rgba(0,0,0,0.6);
+    padding: 1rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    min-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .listado h2 {
-  text-align: center;
-  color: gold;
-  margin-bottom: 10px;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--accent);
 }
 
-.item {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(255,255,255,0.1);
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 10px;
-  font-size: 1.2rem;
-}
-
-input {
-  padding: 10px;
-  width: 200px;
-  border: none;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 1rem;
-  margin-top: 10px;
-}
-
-#cerrarDia {
-  background: gold;
-  color: black;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 20px;
-  box-shadow: 0 0 15px rgba(255,215,0,0.4);
-}
-#cerrarDia:hover { background: #ffe066; }
-
+/* Ticket visual */
 .ticket {
-  display: none;
-  font-family: monospace;
-  font-size: 14px;
-  text-align: center;
+    background: #fff;
+    color: #000;
+    width: 280px;
+    padding: 1rem;
+    border-radius: 10px;
+    font-family: monospace;
+    margin-top: 1rem;
+    display: none;
+}
+
+.ticket h3 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Input para sacar vehículo */
+.salida-input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: none;
+    text-align: center;
+}
+
+/* Pie de página */
+footer {
+    margin-top: 2rem;
+    text-align: center;
+    padding: 1rem;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+.animate { animation: fadeIn 0.8s ease forwards; }
+
+/* Responsivo */
+@media(max-width:600px){
+    .button-grid img { width:100px; height:100px; }
 }
 </style>
 </head>
 <body>
 
-<header>🦐 PARQUEO CEVICHERÍA</header>
+<header>🦐 PARQUEO CEVICHERÍA 🦐</header>
 
 <div class="container">
-  <div class="buttons">
-    <img src="CARRO.png" id="btnCarro" title="Ingresar Carro">
-    <img src="MOTO.png" id="btnMoto" title="Ingresar Moto">
-    <img src="SALIDA.png" id="btnSalida" title="Sacar Vehículo">
-  </div>
 
-  <input type="text" id="codigoSalida" placeholder="Ingrese código a sacar">
+    <div class="button-grid">
+        <img src="CARRO.png" alt="Carro" id="btnCarro">
+        <img src="MOTO.png" alt="Moto" id="btnMoto">
+        <img src="SALIDA.png" alt="Salida" id="btnSalida">
+    </div>
 
-  <div class="listado">
-    <h2>Vehículos en Parqueo</h2>
-    <div id="listaVehiculos"></div>
-  </div>
+    <div class="listado">
+        <h2>Vehículos Ingresados</h2>
+        <ul id="vehiculosList"></ul>
+    </div>
 
-  <button id="cerrarDia">CERRAR Y GENERAR REPORTE</button>
+    <input type="text" id="codigoSalida" class="salida-input" placeholder="Ingrese código para salida">
+
+    <div class="ticket" id="ticket"></div>
+
 </div>
 
-<div id="ticket" class="ticket"></div>
+<footer>*POR FAVOR NO PIERDA ESTE DOCUMENTO*</footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-let registros = JSON.parse(localStorage.getItem('parqueo_registros') || '[]');
-const lista = document.getElementById('listaVehiculos');
+const vehiculos = JSON.parse(localStorage.getItem('vehiculos') || '[]');
+const lista = document.getElementById('vehiculosList');
 const ticketDiv = document.getElementById('ticket');
+const codigoSalida = document.getElementById('codigoSalida');
 
-// Generar código único
-function generarCodigo() {
-  let codigo;
-  do { codigo = Math.floor(100000 + Math.random() * 900000); }
-  while (registros.some(r => r.codigo === codigo));
-  return codigo;
-}
-
-// Mostrar lista
+function guardarLocal() { localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
 function actualizarLista() {
-  lista.innerHTML = '';
-  registros.filter(r => !r.salida).forEach(r => {
-    const icono = r.tipo === 'CARRO' ? '🚗' : '🏍️';
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `<span>${icono} ${r.codigo}</span><span>${r.hora}</span>`;
-    lista.appendChild(div);
-  });
-  localStorage.setItem('parqueo_registros', JSON.stringify(registros));
+    lista.innerHTML = '';
+    vehiculos.forEach(v => {
+        const li = document.createElement('li');
+        li.textContent = `${v.simbolo}  ${v.codigo}  ${v.hora}`;
+        lista.appendChild(li);
+    });
 }
+
+function generarCodigo() {
+    let codigo;
+    do {
+        codigo = Math.floor(1000 + Math.random()*9000);
+    } while(vehiculos.some(v => v.codigo===codigo));
+    return codigo;
+}
+
+function agregarVehiculo(tipo) {
+    const codigo = generarCodigo();
+    const hora = new Date().toLocaleString();
+    const simbolo = tipo==='CARRO'?'🚗':'🏍️';
+    vehiculos.push({codigo, hora, tipo, simbolo});
+    guardarLocal();
+    actualizarLista();
+    mostrarTicket(codigo, simbolo, hora, tipo);
+}
+
+function mostrarTicket(codigo, simbolo, hora, tipo){
+    ticketDiv.style.display='block';
+    ticketDiv.innerHTML = `
+        <h3>🦐 PARQUEO CEVICHERÍA 🦐</h3>
+        <p>${simbolo} Código: ${codigo}</p>
+        <p>Hora: ${hora}</p>
+        <p>Tarifa: Q${tipo==='CARRO'?10:5}.00</p>
+    `;
+    setTimeout(()=>ticketDiv.style.display='none',5000);
+}
+
+function salidaVehiculo() {
+    const code = parseInt(codigoSalida.value);
+    if(isNaN(code)) return alert('Ingrese un código válido');
+    const index = vehiculos.findIndex(v => v.codigo===code);
+    if(index===-1) return alert('Código no encontrado');
+    const v = vehiculos.splice(index,1)[0];
+    guardarLocal();
+    actualizarLista();
+    mostrarTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo);
+    codigoSalida.value='';
+}
+
+document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
+document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
+document.getElementById('btnSalida').addEventListener('click', salidaVehiculo);
+
 actualizarLista();
 
-// Imprimir ticket térmico
-function imprimirTicket(contenido) {
-  const vent = window.open('', '_blank', 'width=300,height=600');
-  vent.document.write(`<pre style="font-family:monospace;text-align:center;font-size:14px;">${contenido}</pre>`);
-  vent.print();
-  vent.close();
-}
-
-// Ingreso vehículo
-function ingresar(tipo) {
-  const codigo = generarCodigo();
-  const fecha = new Date();
-  const hora = fecha.toLocaleTimeString();
-  const dia = fecha.toLocaleDateString();
-  registros.push({ tipo, codigo, hora, dia, salida:false });
-  localStorage.setItem('parqueo_registros', JSON.stringify(registros));
-
-  const icono = tipo === 'CARRO' ? '🚗' : '🏍️';
-  const ticket = `
-🦐 PARQUEO CEVICHERÍA
-------------------------
-Tipo: ${icono} ${tipo}
-Código: ${codigo}
-Fecha: ${dia}
-Hora: ${hora}
-------------------------
-*POR FAVOR NO PIERDA ESTE DOCUMENTO*
-`;
-  imprimirTicket(ticket);
-  actualizarLista();
-}
-
-// Salida vehículo
-function sacarVehiculo() {
-  const codigo = document.getElementById('codigoSalida').value.trim();
-  if (!codigo) return alert('Ingrese un código.');
-  const vehiculo = registros.find(r => r.codigo == codigo && !r.salida);
-  if (!vehiculo) return alert('Código no encontrado.');
-
-  vehiculo.salida = true;
-  const total = vehiculo.tipo === 'CARRO' ? 10 : 5;
-  const fecha = new Date();
-  const horaSalida = fecha.toLocaleTimeString();
-  vehiculo.horaSalida = horaSalida;
-  vehiculo.total = total;
-  localStorage.setItem('parqueo_registros', JSON.stringify(registros));
-
-  const icono = vehiculo.tipo === 'CARRO' ? '🚗' : '🏍️';
-  const ticket = `
-🦐 PARQUEO CEVICHERÍA
-------------------------
-Tipo: ${icono} ${vehiculo.tipo}
-Código: ${vehiculo.codigo}
-Entrada: ${vehiculo.hora}
-Salida: ${horaSalida}
-------------------------
-Total a pagar: Q${total}.00
-------------------------
-*POR FAVOR NO PIERDA ESTE DOCUMENTO*
-`;
-  imprimirTicket(ticket);
-  actualizarLista();
-  document.getElementById('codigoSalida').value = '';
-}
-
-// Cierre del día
+// Cierre y PDF
 function cierreDia() {
-  const vendidos = registros.filter(r => r.salida);
-  const totalCarros = vendidos.filter(r => r.tipo==='CARRO').length;
-  const totalMotos = vendidos.filter(r => r.tipo==='MOTO').length;
-  const totalQ = vendidos.reduce((sum,r)=>sum+r.total,0);
-
-  const ticket = `
-🦐 PARQUEO CEVICHERÍA
-===== CIERRE DEL DÍA =====
-Carros: ${totalCarros}  x Q10 = Q${totalCarros*10}
-Motos: ${totalMotos}  x Q5 = Q${totalMotos*5}
-------------------------
-TOTAL GENERAL: Q${totalQ}
-------------------------
-${new Date().toLocaleString()}
-`;
-  imprimirTicket(ticket);
-
-  // Descargar PDF respaldo
-  const blob = new Blob([ticket], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Cierre_Parqueo_${new Date().toLocaleDateString()}.pdf`;
-  a.click();
-
-  registros = [];
-  localStorage.setItem('parqueo_registros', JSON.stringify(registros));
-  actualizarLista();
+    if(vehiculos.length===0) return alert('No hay vehículos en el sistema');
+    let totalCarros = 0, totalMotos = 0, totalMonto = 0;
+    vehiculos.forEach(v=>{
+        if(v.tipo==='CARRO'){ totalCarros++; totalMonto+=10; }
+        else { totalMotos++; totalMonto+=5; }
+    });
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("🦐 PARQUEO CEVICHERÍA 🦐", 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Total Carros: ${totalCarros}`, 20, 40);
+    doc.text(`Total Motos: ${totalMotos}`, 20, 50);
+    doc.text(`Total Recaudado: Q${totalMonto}.00`, 20, 60);
+    doc.save(`cierre_parqueo_${new Date().toLocaleDateString()}.pdf`);
+    localStorage.removeItem('vehiculos');
+    actualizarLista();
 }
 
-// Eventos
-document.getElementById('btnCarro').onclick = ()=>ingresar('CARRO');
-document.getElementById('btnMoto').onclick = ()=>ingresar('MOTO');
-document.getElementById('btnSalida').onclick = sacarVehiculo;
-document.getElementById('cerrarDia').onclick = cierreDia;
 </script>
+
 </body>
 </html>
