@@ -15,7 +15,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Courier New', monospace;
 }
 
 body {
@@ -83,7 +83,6 @@ header {
 /* Ticket de impresión */
 .ticket-print {
     width: 280px; /* 80mm approx */
-    font-family: 'Courier New', monospace;
     padding: 15px;
     text-align: center;
     border: 2px solid var(--accent);
@@ -93,20 +92,14 @@ header {
 }
 
 .ticket-print h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
+    font-size: 22px;
+    margin-bottom: 15px;
     color: var(--accent);
 }
 
 .ticket-print p {
-    font-size: 18px;
-    margin: 6px 0;
-}
-
-.ticket-print img {
-    width: 80px;
-    height: 80px;
-    margin: 10px 0;
+    font-size: 20px;
+    margin: 8px 0;
 }
 
 /* Input para sacar vehículo */
@@ -187,10 +180,10 @@ function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
     const contenido = `
         <div class="ticket-print">
             <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
-            <img src="${tipo}.png" alt="${tipo}">
-            <p>${simbolo} Código: <strong style="font-size:22px;">${codigo}</strong></p>
-            <p>Hora: ${hora}</p>
-            ${!ingreso?`<p>Tarifa: <strong style="font-size:22px;">Q${tipo==='CARRO'?10:5}.00</strong></p>`:''}
+            <p>${simbolo}</p>
+            <p>Código: <strong>${codigo}</strong></p>
+            <p>Hora: <strong>${hora}</strong></p>
+            ${!ingreso?`<p>Tarifa: <strong>Q${tipo==='CARRO'?10:5}.00</strong></p>`:''}
             <p style="font-size:16px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
         </div>
     `;
@@ -261,3 +254,4 @@ btnCierre.addEventListener('click', ()=>{
 
 </body>
 </html>
+
