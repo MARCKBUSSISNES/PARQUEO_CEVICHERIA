@@ -1,429 +1,592 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Parqueo • Tickets 80mm con registro</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sistema de Gestión de Parqueo - Marck Business</title>
+
+<!-- jsPDF y html2canvas para generar PDF en cliente -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
-  :root{
-    --bg:#0b0d11; --panel:#141820; --fg:#f5f5f5; --mut:#97a1b3;
-    --line:#dd2b2b; --gold:#f3b000;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:Segoe UI,Arial,sans-serif}
+    :root{
+        --bg: #f4f6f8;
+        --card: #ffffff;
+        --accent: #003366;
+        --accent2: #ff6600;
+        --muted:#666;
+    }
+    html,body{height:100%;margin:0;font-family:Inter, Arial, sans-serif;background:#e9eef3;}
+    /* fondo general usando tu imagen */
+    body{
+        background: url('images/121212.png') center/cover fixed no-repeat;
+    }
+    .app {
+        max-width:1100px;
+        margin:24px auto;
+        padding:20px;
+        background: rgba(255,255,255,0.9);
+        border-radius:10px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    }
 
-  /* Header */
-  .header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid #222}
-  .title{margin-right:auto;font-weight:900;letter-spacing:.08em;font-size:34px}
-  .stats{display:flex;gap:10px;flex-wrap:wrap}
-  .pill{background:#1e2636;border:1px solid #2a3346;border-radius:999px;padding:6px 10px;font-weight:800}
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    header h1{font-size:1.25rem; color:var(--accent); margin:0;}
+    header .info { text-align:right; color:var(--muted); font-size:0.9rem; }
 
-  /* Barra superior: código grande */
-  .topbar{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px 20px;border-bottom:1px solid #222;background:#111827;position:sticky;top:0;z-index:5}
-  .codeInput{height:64px;font-size:28px;font-weight:900;letter-spacing:.08em;border-radius:12px;border:2px solid #2b3345;background:#0c111b;color:#fff;padding:0 16px}
-  .btnBig{height:64px;padding:0 22px;border-radius:12px;border:2px solid #2a2f3c;background:#18301f;color:#dff7e7;font-weight:900;font-size:20px;cursor:pointer}
-  .btnBig:hover{filter:brightness(1.06)}
+    .controls { display:flex; gap:16px; flex-wrap:wrap; margin:18px 0; align-items:center; }
+    .btn-img {
+        width:110px;
+        height:110px;
+        border-radius:10px;
+        border:2px solid rgba(0,0,0,0.06);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+        transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .btn-img img{ max-width:80%; max-height:80%; pointer-events:none; }
+    .btn-img:hover{ transform: translateY(-4px); box-shadow:0 10px 25px rgba(0,0,0,0.12); }
 
-  /* Layout principal: izquierda ancho completo, rail derecha fijo */
-  .wrap{display:grid;grid-template-columns:1fr 420px;gap:20px;max-width:1600px;margin:0 auto;padding:16px 20px}
-  .canvas,.rail{background:var(--panel);border:1px solid #1e2330;border-radius:16px}
-  .canvas{padding:18px}
-  .rail{padding:16px}
-  .rail h3{margin:0 0 10px;color:#aab2c2;font-size:13px;letter-spacing:.12em}
+    .small-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn {
+        background:var(--accent);
+        color:white;
+        padding:10px 14px;
+        border-radius:8px;
+        border:none;
+        cursor:pointer;
+        font-weight:600;
+    }
+    .btn.secondary { background:var(--accent2); }
+    .btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(0,0,0,0.08); }
 
-  /* Botones de entrada: solo imagen, enormes */
-  .hero{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .iconbtn{
-    border:3px solid var(--line); border-radius:18px;
-    background:linear-gradient(135deg,rgba(255,255,255,.02),transparent 40%),linear-gradient(315deg,rgba(229,22,47,.12),transparent 60%);
-    cursor:pointer; padding:18px; transition:.15s transform ease,.15s box-shadow ease; width:100%;
-  }
-  .iconbtn:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.25)}
-  .iconbtn svg{display:block;margin:0 auto;height:260px}
+    .layout { display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
+    @media(max-width:980px){ .layout{ grid-template-columns:1fr; } }
 
-  /* Listados derecha */
-  .list{font-size:18px;color:#cfd6e4;max-height:260px;overflow:auto;border-top:1px solid #232a3a;padding-top:10px}
-  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted #2a3244}
-  .codeNum{color:#000;background:#fff;border-radius:8px;padding:2px 10px;font-weight:900}
-  .typeTag{opacity:.9}
+    /* listado y tarjetas */
+    .card {
+        background:var(--card);
+        padding:14px;
+        border-radius:10px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    }
 
-  /* Grid XL de códigos debajo de la lista */
-  .gridDentro{margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-height:380px;overflow:auto}
-  .chip{
-    display:grid;place-items:center; border-radius:16px; font-weight:900; letter-spacing:.04em;
-    font-size:48px; height:110px; color:#000; border:3px solid #222;
-  }
-  .chip.moto{background:#c9ffd9}
-  .chip.carro{background:#ffe0e0}
+    h2.section-title{ margin:0 0 8px 0; color:var(--accent); font-size:1.05rem; }
+    .list { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow:auto; padding-right:6px; }
+    .item {
+        display:flex; align-items:center; gap:12px;
+        padding:8px; border-radius:8px;
+        border:1px solid rgba(0,0,0,0.04);
+    }
+    .symbol { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .symbol.car { background: linear-gradient(90deg,#ffefef,#fff4e8); color:#b33; }
+    .symbol.moto { background: linear-gradient(90deg,#effaff,#eef9ff); color:#045; }
+    .meta { flex:1; display:flex; flex-direction:column; }
+    .meta .code { font-weight:700; color:var(--accent); }
+    .meta .time { font-size:0.85rem; color:var(--muted); }
 
-  /* Ventas y cierres (listas) */
-  .panelList{max-height:280px;overflow:auto;border-top:1px solid #232a3a;padding-top:10px}
-  .saleRow{display:grid;grid-template-columns:110px 1fr 90px;gap:8px;padding:6px 0;border-bottom:1px dotted #2a3244;font-weight:700}
-  .smallBtn{width:100%;padding:10px 12px;margin:8px 0;border-radius:10px;border:2px solid #2a2f3c;background:#1b2130;color:#e9eef8;font-weight:800;cursor:pointer}
-  .smallBtn.warn{background:#2b2416;border-color:#ffcc0022}
-  .smallBtn.danger{background:#2b1616;border-color:#ff3b3040}
+    /* area derecha: control de salida, ventas, respaldo */
+    .right .field { margin-bottom:10px; }
+    label{ font-size:0.85rem; color:var(--muted); display:block; margin-bottom:6px; }
+    input[type="text"]{ width:100%; padding:10px;border-radius:8px;border:1px solid #ddd; }
+    .sales-list{ max-height:220px; overflow:auto; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .sale-row{ display:flex; justify-content:space-between; padding:8px;border-radius:8px;background:#fafafa;border:1px solid #eee;font-size:0.95rem; }
 
-  .foot{text-align:center;color:#96a0b5;font-size:12px;padding:8px 16px}
+    /* ticket styling (hidden area for print/pdf) */
+    .ticket {
+        width: 300px; /* ~80mm (adjustable) */
+        padding:10px;
+        background:white;
+        color:black;
+        font-family:monospace, monospace;
+        font-size:12px;
+        border: 1px solid #ccc;
+        margin:10px auto;
+        line-height:1.15;
+    }
+    .ticket .center{ text-align:center; }
+    .ticket .big{ font-size:16px; font-weight:700; margin:6px 0; }
+    .ticket .sep{ border-top:1px dashed #333; margin:8px 0; }
+    .ticket .footer { font-size:11px; margin-top:8px; text-align:center; font-weight:700; }
 
-  /* Tickets 80mm */
-  #t-entrada,#t-venta{display:none}
-  .paper{width:80mm;background:#fff;color:#000}
-  .pad{padding:8mm 6mm}
-  .imgTop{display:block;margin:6mm auto 0;width:44mm}
-  h1{font:bold 18pt/1.1 Arial, sans-serif;text-align:center;margin:3mm 0 0}
-  h1 .small{display:block;font-size:14pt;margin-top:1mm}
-  .veh{font:bold 12pt/1.1 Arial;text-align:center;margin:3mm 0 0}
-  .label{font:bold 10pt Arial;margin:6mm 0 1mm}
-  .date{font:10pt Arial}
-  .time{font:bold 30pt Arial;text-align:center;margin:4mm 0 4mm}
-  .code-label{font:bold 12pt Arial;text-align:center;border-top:1px solid #000;padding-top:3mm;margin-top:4mm}
-  .code{font:bold 28pt Arial;text-align:center;letter-spacing:2pt;margin:1mm 0 2mm}
-  .total{font:bold 22pt Arial;text-align:center;margin:4mm 0 2mm}
-  .note{font:8pt Arial;text-align:center;margin:6mm 0 4mm}
+    /* helper */
+    .muted{ color:var(--muted); font-size:0.9rem; }
+    .flex { display:flex; gap:8px; align-items:center; }
+    .right .controls-compact { display:flex; gap:8px; flex-wrap:wrap; }
 
-  /* Cierre (A4) */
-  #cierre{display:none;padding:30mm 20mm;font-family:Arial, sans-serif;color:#000}
-  #cierre h2{font:bold 32pt Arial;margin:0 0 6mm}
-  #cierre .fecha{font:16pt Arial;margin:0 0 6mm}
-  #cierre .box{border-top:2px solid #000;border-bottom:2px solid #000;padding:6mm 0;margin:6mm 0}
-  #cierre .big{font:bold 28pt Arial}
-  #cierre .sub{font:14pt Arial;color:#333}
-
-  @media print{
-    body{background:#fff}
-    .header,.topbar,.wrap,.foot{display:none!important}
-    @page{margin:0}
-    .paper{display:block}
-  }
+    /* print styles (only ticket) */
+    @media print {
+        body * { visibility: hidden; }
+        .printable-ticket, .printable-ticket * { visibility: visible; }
+        .printable-ticket { position: absolute; left:0; top:0; }
+    }
 </style>
 </head>
 <body>
-  <div class="header">
-    <div class="title">PARQUEO</div>
-    <div class="stats">
-      <div class="pill" id="pm">Motos adentro: 0</div>
-      <div class="pill" id="pc">Carros adentro: 0</div>
-      <div class="pill" id="ps">Salidos hoy: 0</div>
+<div class="app">
+    <header>
+        <h1>Parqueo — Sistema de Gestión</h1>
+        <div class="info">
+            <div>Tel: +502 41529411</div>
+            <div class="muted">Datos guardados en el equipo (localStorage)</div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <!-- botones con tus imágenes -->
+        <div class="btn-img" id="btn-moto" title="Ingresar MOTO">
+            <img src="images/moto.png" alt="Moto">
+        </div>
+        <div class="btn-img" id="btn-carro" title="Ingresar CARRO">
+            <img src="images/carro.png" alt="Carro">
+        </div>
+
+        <div style="flex:1"></div>
+
+        <div class="small-actions">
+            <button class="btn ghost" id="export-json">Exportar respaldo (JSON)</button>
+            <button class="btn ghost" id="import-json">Importar respaldo (JSON)</button>
+            <button class="btn secondary" id="close-day">Cierre de ventas (PDF y limpiar)</button>
+        </div>
     </div>
-  </div>
 
-  <!-- BARRA SUPERIOR: CÓDIGO GRANDE -->
-  <div class="topbar">
-    <input id="codigoSalida" class="codeInput" placeholder="Escriba aquí el CÓDIGO y presione Enter" maxlength="8" inputmode="numeric" aria-label="Código de salida">
-    <button class="btnBig" onclick="salida()">Cobrar & Imprimir</button>
-  </div>
+    <div class="layout">
+        <!-- izquierda: listado en tiempo real -->
+        <div>
+            <div class="card">
+                <h2 class="section-title">Vehículos en parqueo</h2>
+                <div class="muted" style="margin-bottom:8px">Se muestran los vehículos actualmente dentro</div>
+                <div id="vehiclesList" class="list" aria-live="polite"></div>
+            </div>
 
-  <div class="wrap">
-    <!-- IZQUIERDA: botones gigantes -->
-    <section class="canvas">
-      <div class="hero">
-        <button class="iconbtn" onclick="camaronMoto()" title="Camarón en MOTO">
-          <!-- Moto realista + camarón -->
-          <svg viewBox="0 0 512 256" aria-hidden="true">
-            <circle cx="120" cy="190" r="46" fill="#0a0a0a"/><circle cx="120" cy="190" r="26" fill="#e6e6e6"/>
-            <circle cx="370" cy="190" r="46" fill="#0a0a0a"/><circle cx="370" cy="190" r="26" fill="#e6e6e6"/>
-            <path d="M90 170h70l38-28 40-16h48l20 30h44l15 16h-92l-14-22h-30l-44 31h-95z" fill="#ffffff" opacity=".95"/>
-            <path d="M205 120c22-12 40-16 56-16 16 0 26 4 34 10l12 10h-58c-16 0-28 2-44 12z" fill="#ffffff"/>
-            <path d="M296 104l24-14 18 0" stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none"/>
-            <defs><linearGradient id="shrimpM" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient></defs>
-            <path d="M238 96c-20 0-36 16-36 36s16 36 36 36c26 0 48-22 48-48s-22-24-48-24z" fill="url(#shrimpM)"/>
-            <path d="M286 104c12 2 26 18 26 34s-6 26-18 32" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
-            <circle cx="254" cy="120" r="4" fill="#000"/>
-          </svg>
-        </button>
+            <div style="height:12px"></div>
 
-        <button class="iconbtn" onclick="camaronCarro()" title="Camarón en CARRO">
-          <!-- Carro realista + camarón -->
-          <svg viewBox="0 0 512 256" aria-hidden="true">
-            <circle cx="140" cy="200" r="44" fill="#0a0a0a"/><circle cx="140" cy="200" r="22" fill="#e6e6e6"/>
-            <circle cx="380" cy="200" r="44" fill="#0a0a0a"/><circle cx="380" cy="200" r="22" fill="#e6e6e6"/>
-            <path d="M44 166h36l26-34c8-10 24-18 48-24l120-26c22-4 54 6 70 20l30 26h48c14 0 26 10 26 24v38H44z" fill="#ffffff" opacity=".95"/>
-            <path d="M178 100c30-22 86-26 118-20 16 4 34 16 44 26l20 20h-62l-18-20c-6-6-18-8-30-8h-72z" fill="#ffffff"/>
-            <defs><linearGradient id="shrimpC" x1="0" x2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient></defs>
-            <path d="M232 86c-22 0-40 18-40 40s18 40 40 40c28 0 52-24 52-52s-24-28-52-28z" fill="url(#shrimpC)"/>
-            <path d="M284 96c14 3 30 20 30 38s-8 28-20 34" fill="none" stroke="#ffb3b3" stroke-width="6" stroke-linecap="round"/>
-            <circle cx="248" cy="98" r="4" fill="#000"/>
-          </svg>
-        </button>
-      </div>
-    </section>
+            <div class="card">
+                <h2 class="section-title">Registro rápido</h2>
+                <div class="muted">Últimos movimientos</div>
+                <div id="logList" class="list" style="max-height:140px;"></div>
+            </div>
+        </div>
 
-    <!-- DERECHA: listas y admin -->
-    <aside class="rail">
-      <h3>ADENTRO (lista)</h3>
-      <div class="list" id="listaDentro"></div>
+        <!-- derecha: salida y ventas -->
+        <div class="right">
+            <div class="card">
+                <h2 class="section-title">Retirar vehículo</h2>
 
-      <h3 style="margin-top:12px">ADENTRO (números grandes)</h3>
-      <div class="gridDentro" id="gridDentro"></div>
+                <div class="field">
+                    <label for="exitCode">Ingrese código del vehículo</label>
+                    <input id="exitCode" type="text" placeholder="Código (ej: 123456)" />
+                </div>
 
-      <h3 style="margin-top:12px">VENTAS DIARIAS</h3>
-      <button class="smallBtn" onclick="toggleVentasDia()">Mostrar/Ocultar ventas hoy</button>
-      <div class="panelList" id="ventasDia" style="display:none"></div>
+                <div class="field flex">
+                    <div class="btn-img" id="btn-salida" title="Sacar vehículo">
+                        <img src="images/salida.png" alt="Salida">
+                    </div>
+                    <div style="flex:1">
+                        <div class="muted">Tarifas: Moto Q5.00 — Carro Q10.00</div>
+                    </div>
+                </div>
 
-      <h3 style="margin-top:12px">HISTORIAL DE CIERRES</h3>
-      <button class="smallBtn" onclick="toggleCierres()">Mostrar/Ocultar cierres</button>
-      <div class="panelList" id="listaCierres" style="display:none"></div>
+                <div style="height:12px"></div>
+                <h2 class="section-title">Ventas del día</h2>
+                <div id="salesSummary" class="sales-list"></div>
+                <div style="height:8px"></div>
+                <div class="muted">Total acumulado: <strong id="totalAmount">Q0.00</strong></div>
+            </div>
 
-      <h3 style="margin-top:12px">ADMIN</h3>
-      <button class="smallBtn warn" onclick="cierreVentas()">Imprimir Cierre (hoy)</button>
-      <button class="smallBtn danger" onclick="borrarVentasClave()">Borrar ventas (clave)</button>
-      <button class="smallBtn danger" onclick="borrarRegistrosClave()">Borrar registros (clave)</button>
-    </aside>
-  </div>
+            <div style="height:12px"></div>
 
-  <div class="foot">© 2025 Marck Business. Todos los derechos reservados.</div>
+            <div class="card">
+                <h2 class="section-title">Respaldo / restaurar</h2>
+                <div class="muted">Descarga o sube un archivo JSON con todo el estado</div>
+                <div style="height:8px"></div>
+                <button class="btn ghost" id="download-json">Descargar respaldo JSON</button>
+                <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+            </div>
+        </div>
+    </div>
 
-  <!-- TICKET ENTRADA -->
-  <section id="t-entrada" aria-hidden="true">
-    <div class="paper"><div class="pad">
-      <div id="e-img"></div>
-      <h1>TICKET DE<span class="small">PARQUEO</span></h1>
-      <div class="veh"  id="e-veh">MOTO</div>
-      <div class="label">HORA DE ENTRADA</div>
-      <div class="date" id="e-fecha"></div>
-      <div class="time" id="e-hora"></div>
-      <div class="code-label">CODIGO</div>
-      <div class="code" id="e-cod"></div>
-      <div class="note">*RECUERDE NO PERDER ESTE TICKET*</div>
-    </div></div>
-  </section>
-
-  <!-- TICKET VENTA -->
-  <section id="t-venta" aria-hidden="true">
-    <div class="paper"><div class="pad">
-      <div id="v-img"></div>
-      <h1>TICKET DE<span class="small">VENTA</span></h1>
-      <div class="veh"  id="v-veh">MOTO</div>
-      <div class="label">HORA DE ENTRADA</div>
-      <div class="date" id="v-fecha"></div>
-      <div class="time" id="v-hora"></div>
-      <div class="label" style="text-align:center">CODIGO</div>
-      <div class="code" id="v-cod"></div>
-      <div class="label" style="text-align:center">TOTAL</div>
-      <div class="total" id="v-total">Q0.00</div>
-      <div class="note">GRACIAS POR SU TIEMPO ESPERAMOS QUE VUELVA</div>
-    </div></div>
-  </section>
-
-  <!-- CIERRE (A4) -->
-  <section id="cierre" aria-hidden="true">
-    <h2>CIERRE DE<br>VENTAS</h2>
-    <div class="fecha" id="c-fecha"></div>
-    <div class="box"><div class="sub">TOTAL</div><div class="big" id="c-total">Q0.00</div></div>
-    <div class="sub">TOTAL DE VEHÍCULOS</div><div class="big" id="c-veh">0</div>
-  </section>
+    <!-- hidden area used to render printable ticket -->
+    <div id="printArea" style="display:none;"></div>
+</div>
 
 <script>
-/* ======= Config & claves ======= */
-const PWD   = '22782522';
-const KEY_R = 'lp_parqueo_records_v3'; // registros (dentro/salido)
-const KEY_S = 'lp_parqueo_sales_v3';   // ventas acumuladas (persistentes)
-const KEY_C = 'lp_parqueo_cierres_v1'; // historial de cierres (persistente)
-const PRICE = { MOTO: 5, CARRO: 10 };
+/* ---------- Configuración y almacenamiento ---------- */
+const STORAGE_KEYS = {
+  VEHICLES: 'parking_vehicles_v1',
+  SALES: 'parking_sales_v1',
+  CODES: 'parking_codes_v1',
+  LOGS: 'parking_logs_v1'
+};
 
-let records = load(KEY_R) || [];
-let sales   = load(KEY_S) || [];
-let cierres = load(KEY_C) || [];
-let lastTicketSection = null;
+const TARIFF = { MOTO: 5.00, CARRO: 10.00 };
 
-function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
-function save(){ localStorage.setItem(KEY_R, JSON.stringify(records)); localStorage.setItem(KEY_S, JSON.stringify(sales)); localStorage.setItem(KEY_C, JSON.stringify(cierres)); }
+/* util: obtener objeto desde localStorage */
+function load(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) { return fallback; }
+}
+function save(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-/* ======= Utilidades ======= */
-function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
-function fechaLargaES(d){ return new Intl.DateTimeFormat('es-GT',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(d); }
-function horaES(d){ return new Intl.DateTimeFormat('es-GT',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m."); }
-function moneyQ(n){ return "Q" + n.toFixed(2); }
-function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+/* inicializar estructuras */
+let vehicles = load(STORAGE_KEYS.VEHICLES, []); // {code,type,enteredAt}
+let sales = load(STORAGE_KEYS.SALES, []); // {code,type,enteredAt,exitedAt,amount}
+let usedCodes = load(STORAGE_KEYS.CODES, []); // array de strings
+let logs = load(STORAGE_KEYS.LOGS, []); // lista breve de eventos
 
-/* ======= SVG siluetas para tickets ======= */
-const SVG_MOTO_TICKET = `
-<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="120" cy="190" r="46" fill="#333"/><circle cx="120" cy="190" r="24" fill="#999"/>
-  <circle cx="370" cy="190" r="46" fill="#333"/><circle cx="370" cy="190" r="24" fill="#999"/>
-  <path d="M90 170h70l38-28 40-16h48l20 30h44l15 16h-92l-14-22h-30l-44 31h-95z" fill="#333"/>
-  <path d="M205 120c22-12 40-16 56-16 16 0 26 4 34 10l12 10h-58c-16 0-28 2-44 12z" fill="#333"/>
-  <path d="M296 104l24-14 18 0" stroke="#333" stroke-width="6" stroke-linecap="round" fill="none"/>
-</svg>`;
-const SVG_CARRO_TICKET = `
-<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="140" cy="200" r="44" fill="#333"/><circle cx="140" cy="200" r="22" fill="#999"/>
-  <circle cx="380" cy="200" r="44" fill="#333"/><circle cx="380" cy="200" r="22" fill="#999"/>
-  <path d="M44 166h36l26-34c8-10 24-18 48-24l120-26c22-4 54 6 70 20l30 26h48c14 0 26 10 26 24v38H44z" fill="#333"/>
-  <path d="M178 100c30-22 86-26 118-20 16 4 34 16 44 26l20 20h-62l-18-20c-6-6-18-8-30-8h-72z" fill="#333"/>
-</svg>`;
+/* ---------- UI refs ---------- */
+const vehiclesList = document.getElementById('vehiclesList');
+const salesSummary = document.getElementById('salesSummary');
+const totalAmountEl = document.getElementById('totalAmount');
+const logList = document.getElementById('logList');
 
-/* ======= Entradas ======= */
-function entrada(tipo){
+/* ---------- Código aleatorio único ---------- */
+function generateUniqueCode() {
+  // Genera un número de 6 dígitos (puedes ajustar longitud)
+  // Reintenta si ya existe (seguridad)
+  const maxAttempts = 1000;
+  for(let i=0;i<maxAttempts;i++){
+    const code = Math.floor(100000 + Math.random()*900000).toString(); // 6 dígitos
+    if(!usedCodes.includes(code) && !vehicles.find(v=>v.code===code)){
+      usedCodes.push(code);
+      save(STORAGE_KEYS.CODES, usedCodes);
+      return code;
+    }
+  }
+  // Si se agota, genera UUID corto
   let code;
-  do { code = String(codigo4()); } while (records.some(r => r.estado==='DENTRO' && r.code===code));
-  const now = new Date();
-  const rec = { code, tipo, entrada: now.toISOString(), salida: null, totalQ: null, estado: 'DENTRO' };
-  records.push(rec); save(); actualizarUI();
-
-  // Ticket ENTRADA
-  document.getElementById('e-veh').textContent = tipo;
-  document.getElementById('e-fecha').textContent = fechaLargaES(now);
-  document.getElementById('e-hora').textContent  = horaES(now);
-  document.getElementById('e-cod').textContent   = code;
-  document.getElementById('e-img').innerHTML     = (tipo==='MOTO') ? SVG_MOTO_TICKET : SVG_CARRO_TICKET;
-
-  lastTicketSection = 't-entrada';
-  imprimir('t-entrada');
+  do {
+    code = Date.now().toString().slice(-6) + Math.floor(Math.random()*90).toString();
+  } while(usedCodes.includes(code));
+  usedCodes.push(code);
+  save(STORAGE_KEYS.CODES, usedCodes);
+  return code;
 }
 
-/* alias solicitados */
-function camaronMoto(){ entrada('MOTO'); }
-function camaronCarro(){ entrada('CARRO'); }
-
-/* ======= Salida (cobro) ======= */
-function salida(){
-  const code = (document.getElementById('codigoSalida').value||'').trim();
-  if(!code){ alert('Ingresa el código del vehículo.'); return; }
-  const rec = records.find(r => r.code===code && r.estado==='DENTRO');
-  if(!rec){ alert('Código no encontrado o ya salió.'); return; }
-
-  const now = new Date();
-  rec.salida = now.toISOString();
-  rec.totalQ = PRICE[rec.tipo];
-  rec.estado = 'SALIO';
-  sales.push({ whenISO: now.toISOString(), code: rec.code, tipo: rec.tipo, totalQ: rec.totalQ });
-  save(); actualizarUI();
-
-  // Ticket VENTA
-  document.getElementById('v-veh').textContent   = rec.tipo;
-  document.getElementById('v-fecha').textContent = fechaLargaES(now);
-  document.getElementById('v-hora').textContent  = horaES(now);
-  document.getElementById('v-cod').textContent   = rec.code;
-  document.getElementById('v-total').textContent = moneyQ(rec.totalQ);
-  document.getElementById('v-img').innerHTML     = (rec.tipo==='MOTO') ? SVG_MOTO_TICKET : SVG_CARRO_TICKET;
-
-  lastTicketSection = 't-venta';
-  document.getElementById('codigoSalida').value='';
-  imprimir('t-venta');
+/* ---------- Helpers de fecha/hora ---------- */
+function nowISO(){ return new Date().toISOString(); }
+function formatDateTime(iso){
+  const d = new Date(iso);
+  const date = d.toLocaleDateString();
+  const time = d.toLocaleTimeString();
+  return `${date} ${time}`;
 }
 
-/* ======= Impresión ======= */
-function imprimirUltimo(){
-  if(!lastTicketSection){ alert('Aún no hay tickets generados.'); return; }
-  imprimir(lastTicketSection);
-}
-function imprimir(sectionId){
-  const secEntrada = document.getElementById('t-entrada');
-  const secVenta   = document.getElementById('t-venta');
-  const cierreView = document.getElementById('cierre');
-  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='none';
-  document.getElementById(sectionId).style.display='block';
-  setTimeout(()=>window.print(), 80);
-}
-
-/* ======= Cierre de ventas (guarda historial, NO borra ventas) ======= */
-function cierreVentas(){
-  const hoy = new Date();
-  const delDia = sales.filter(s => sameDay(new Date(s.whenISO), hoy));
-  const totalQ = delDia.reduce((a,s)=>a+s.totalQ, 0);
-  const totalN = delDia.length;
-
-  document.getElementById('c-fecha').textContent = new Intl.DateTimeFormat('es-GT',{dateStyle:'short', timeStyle:'short'}).format(hoy);
-  document.getElementById('c-total').textContent = moneyQ(totalQ);
-  document.getElementById('c-veh').textContent   = String(totalN);
-
-  // guardar en historial de cierres
-  cierres.push({ whenISO: hoy.toISOString(), totalQ, totalN });
-  save(); renderCierres();
-
-  const cierreView = document.getElementById('cierre');
-  const secEntrada = document.getElementById('t-entrada');
-  const secVenta   = document.getElementById('t-venta');
-  secEntrada.style.display='none'; secVenta.style.display='none'; cierreView.style.display='block';
-  setTimeout(()=>window.print(), 80);
+/* ---------- Render UI ---------- */
+function renderVehicles(){
+  vehiclesList.innerHTML = '';
+  if(vehicles.length === 0){
+    vehiclesList.innerHTML = '<div class="muted">No hay vehículos en parqueo.</div>';
+    return;
+  }
+  vehicles.slice().reverse().forEach(v=>{
+    const div = document.createElement('div');
+    div.className = 'item';
+    const sym = document.createElement('div');
+    sym.className = 'symbol ' + (v.type === 'MOTO' ? 'moto' : 'car');
+    sym.innerHTML = (v.type === 'MOTO' ? '🏍' : '🚗');
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const code = document.createElement('div'); code.className='code'; code.textContent = v.code + '  —  ' + v.type;
+    const time = document.createElement('div'); time.className='time'; time.textContent = formatDateTime(v.enteredAt);
+    meta.appendChild(code); meta.appendChild(time);
+    div.appendChild(sym); div.appendChild(meta);
+    vehiclesList.appendChild(div);
+  });
 }
 
-/* ======= Admin con clave ======= */
-function pedirClave(msg){ const t = prompt(msg || 'Ingrese la clave:'); return t === PWD; }
-function borrarVentasClave(){
-  if(!pedirClave('Para BORRAR ventas acumuladas ingrese la clave:')) return;
-  sales = []; save(); renderVentasDia(); alert('Ventas borradas.');
-}
-function borrarRegistrosClave(){
-  if(!pedirClave('Para BORRAR registros de vehículos (dentro/salidos) ingrese la clave:')) return;
-  records = []; save(); actualizarUI(); alert('Registros borrados.');
-}
-
-/* ======= Vistas: ventas del día ======= */
-function toggleVentasDia(){
-  const el = document.getElementById('ventasDia');
-  if(el.style.display==='none'){ renderVentasDia(); el.style.display='block'; }
-  else{ el.style.display='none'; }
-}
-function renderVentasDia(){
-  const cont = document.getElementById('ventasDia');
-  const hoy = new Date();
-  const delDia = sales.filter(s => sameDay(new Date(s.whenISO), hoy));
-  if(delDia.length===0){ cont.innerHTML = '<i>No hay ventas hoy.</i>'; return; }
-  const rows = delDia
-    .sort((a,b)=>a.whenISO.localeCompare(b.whenISO))
-    .map(s=>{
-      const h = new Intl.DateTimeFormat('es-GT',{hour:'2-digit',minute:'2-digit',second:'2-digit', hour12:true}).format(new Date(s.whenISO));
-      return `<div class="saleRow"><div>${h}</div><div><span class="codeNum">${s.code}</span> • ${s.tipo}</div><div style="text-align:right">${moneyQ(s.totalQ)}</div></div>`;
-    }).join('');
-  cont.innerHTML = rows;
+function renderSales(){
+  salesSummary.innerHTML = '';
+  if(sales.length === 0){
+    salesSummary.innerHTML = '<div class="muted">No hay ventas registradas.</div>';
+  } else {
+    sales.forEach(s=>{
+      const row = document.createElement('div');
+      row.className = 'sale-row';
+      const left = document.createElement('div');
+      left.innerHTML = `${s.type} • ${s.code}`;
+      const right = document.createElement('div');
+      right.innerHTML = 'Q' + parseFloat(s.amount).toFixed(2);
+      row.appendChild(left); row.appendChild(right);
+      salesSummary.appendChild(row);
+    });
+  }
+  const total = sales.reduce((acc,s)=>acc + Number(s.amount), 0);
+  totalAmountEl.textContent = 'Q' + total.toFixed(2);
 }
 
-/* ======= Vistas: historial de cierres ======= */
-function toggleCierres(){
-  const el = document.getElementById('listaCierres');
-  if(el.style.display==='none'){ renderCierres(); el.style.display='block'; }
-  else{ el.style.display='none'; }
-}
-function renderCierres(){
-  const cont = document.getElementById('listaCierres');
-  if(!cierres.length){ cont.innerHTML = '<i>Sin cierres guardados.</i>'; return; }
-  const rows = [...cierres]
-    .sort((a,b)=>a.whenISO.localeCompare(b.whenISO))
-    .map(c=>{
-      const f = new Intl.DateTimeFormat('es-GT',{dateStyle:'short', timeStyle:'short'}).format(new Date(c.whenISO));
-      return `<div class="saleRow"><div>${f}</div><div>Cierre</div><div style="text-align:right">${moneyQ(c.totalQ)} / ${c.totalN}</div></div>`;
-    }).join('');
-  cont.innerHTML = rows;
+function renderLogs(){
+  logList.innerHTML = '';
+  if(logs.length === 0){ logList.innerHTML = '<div class="muted">Sin movimientos aún.</div>'; return; }
+  logs.slice().reverse().forEach(l=>{
+    const div = document.createElement('div');
+    div.className = 'item';
+    const meta = document.createElement('div'); meta.className='meta';
+    const code = document.createElement('div'); code.className='code'; code.textContent = l.text;
+    const time = document.createElement('div'); time.className='time'; time.textContent = formatDateTime(l.at);
+    meta.appendChild(code); meta.appendChild(time);
+    div.appendChild(meta);
+    logList.appendChild(div);
+  });
 }
 
-/* ======= UI contadores + listas ======= */
-function actualizarUI(){
-  const dentro  = records.filter(r => r.estado==='DENTRO').sort((a,b)=>a.entrada.localeCompare(b.entrada));
-  const salidos = records.filter(r => r.estado==='SALIO');
-  const hoy = new Date();
-
-  const m = dentro.filter(r=>r.tipo==='MOTO').length;
-  const c = dentro.filter(r=>r.tipo==='CARRO').length;
-  document.getElementById('pm').textContent = `Motos adentro: ${m}`;
-  document.getElementById('pc').textContent = `Carros adentro: ${c}`;
-  document.getElementById('ps').textContent = `Salidos hoy: ${salidos.filter(r=>sameDay(new Date(r.salida||0), hoy)).length}`;
-
-  // Lista textual (código en NEGRO grande)
-  const lista = dentro.map(r =>
-    `<div class="row"><span class="codeNum">${r.code}</span><span class="typeTag">${r.tipo}</span></div>`
-  ).join('');
-  document.getElementById('listaDentro').innerHTML = lista || '<i>Sin vehículos</i>';
-
-  // Grid de números grandes
-  const grid = dentro.slice().reverse().map(r=>{
-    const cls = (r.tipo==='MOTO') ? 'moto' : 'carro';
-    return `<div class="chip ${cls}" title="${r.tipo}">${r.code}</div>`;
-  }).join('');
-  document.getElementById('gridDentro').innerHTML = grid || `<div class="chip" style="background:#ddd">—</div>`;
-
-  renderVentasDia(); // refresca panel ventas si está abierto
+/* ---------- Acciones de ingreso ---------- */
+function addVehicle(type){
+  const code = generateUniqueCode();
+  const entry = { code, type, enteredAt: nowISO() };
+  vehicles.push(entry);
+  save(STORAGE_KEYS.VEHICLES, vehicles);
+  logs.push({ text: `${type} ingresó - ${code}`, at: nowISO() });
+  save(STORAGE_KEYS.LOGS, logs);
+  renderVehicles(); renderLogs();
+  // generar ticket de ingreso (opcional imprimir) - mostramos modal imprimible
+  const ticketHTML = buildTicketHTML({ code, type, enteredAt: entry.enteredAt, amount: null, isExit:false });
+  openPrintWindow(ticketHTML, true);
 }
-actualizarUI();
 
-/* ======= Atajos ======= */
-document.getElementById('codigoSalida').addEventListener('keydown', e=>{
-  if(e.key==='Enter'){ salida(); }
+/* ---------- Salida de vehículo y cobro ---------- */
+function removeVehicleByCode(codeInput){
+  const code = (codeInput || '').toString().trim();
+  if(!code) { alert('Ingresa un código válido.'); return; }
+  const idx = vehicles.findIndex(v => v.code === code);
+  if(idx === -1){ alert('Código no encontrado o vehículo ya retirado.'); return; }
+  const vehicle = vehicles[idx];
+  const exitedAt = nowISO();
+  const amount = vehicle.type === 'MOTO' ? TARIFF.MOTO : TARIFF.CARRO;
+  // crear registro de venta
+  const sale = {
+    code: vehicle.code,
+    type: vehicle.type,
+    enteredAt: vehicle.enteredAt,
+    exitedAt,
+    amount: amount.toFixed(2)
+  };
+  sales.push(sale);
+  save(STORAGE_KEYS.SALES, sales);
+  // remover de vehículos
+  vehicles.splice(idx,1);
+  save(STORAGE_KEYS.VEHICLES, vehicles);
+  // registro de log
+  logs.push({ text: `${vehicle.type} salido - ${vehicle.code} • Q${amount.toFixed(2)}`, at: nowISO() });
+  save(STORAGE_KEYS.LOGS, logs);
+  // renderizar y emitir ticket
+  renderVehicles(); renderSales(); renderLogs();
+  const ticketHTML = buildTicketHTML({...sale, isExit:true});
+  openPrintWindow(ticketHTML, false);
+}
+
+/* ---------- Construcción HTML de ticket ---------- */
+function buildTicketHTML(obj){
+  /* obj:
+      - code, type, enteredAt, (if exit) exitedAt, amount, isExit (bool)
+  */
+  const dateIn = formatDateTime(obj.enteredAt);
+  const dateOut = obj.exitedAt ? formatDateTime(obj.exitedAt) : '';
+  const title = obj.isExit ? 'TICKET DE PAGO' : 'TICKET DE INGRESO';
+  const amountLine = obj.isExit ? `<div><strong>Importe: Q${Number(obj.amount).toFixed(2)}</strong></div>` : '';
+  // ticket markup
+  return `
+  <div class="ticket printable-ticket" style="width:300px;">
+    <div class="center">
+      <div><img src="images/Diseño%20sin%20titulo.png" style="max-width:80px;" alt="logo"></div>
+      <div class="big">${title}</div>
+    </div>
+    <div class="center">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
+    <div class="sep"></div>
+    <div>Tipo: ${obj.type}</div>
+    <div>Código: ${obj.code}</div>
+    <div>Hora ingreso: ${dateIn}</div>
+    ${ obj.isExit ? `<div>Hora salida: ${dateOut}</div>` : '' }
+    ${ amountLine }
+    <div class="sep"></div>
+    <div class="center">POR FAVOR NO PIERDA ESTE DOCUMENTO</div>
+    <div class="center muted" style="margin-top:8px; font-size:11px;">Powered by Marck Business</div>
+  </div>
+  `;
+}
+
+/* ---------- Imprimir o descargar ticket ---------- */
+async function openPrintWindow(htmlContent, autoPrint=true){
+  // renderizar a printArea y usar html2canvas -> jsPDF o window.print
+  const printContainer = document.getElementById('printArea');
+  printContainer.innerHTML = htmlContent;
+  // mostrar modal de impresión: abrimos nueva ventana para impresión (mejor compatibilidad)
+  const win = window.open('', '_blank', 'width=420,height=800');
+  if(!win){ alert('Se bloqueó la apertura de la ventana de impresión. Permite popups.'); return; }
+  win.document.write(`
+    <html><head><title>Ticket</title>
+    <style>
+      body{ font-family: monospace; padding:10px; background:#fff; }
+      .ticket{ width:300px; margin:0 auto; font-size:12px; line-height:1.2; color:#000; }
+      .center{text-align:center;}
+      .big{font-weight:700; font-size:14px;}
+      .sep{border-top:1px dashed #000; margin:8px 0;}
+    </style>
+    </head><body>
+    ${printContainer.innerHTML}
+    </body></html>
+  `);
+  win.document.close();
+  // wait for resources
+  win.focus();
+  if(autoPrint){
+    // give the window a moment to load images
+    setTimeout(()=>{ win.print(); /*win.close();*/ }, 600);
+  }
+}
+
+/* ---------- Cierre de ventas: genera PDF resumen y limpia datos ---------- */
+async function closeDayAndExportPDF(){
+  if(!confirm('El cierre imprimirá y descargará un respaldo en PDF y BORRARÁ los datos actuales. ¿Deseas continuar?')) return;
+  // construir contenido del resumen
+  const date = new Date().toLocaleString();
+  const total = sales.reduce((acc,s)=>acc + Number(s.amount),0);
+  const countMoto = sales.filter(s=>s.type==='MOTO').length;
+  const countCar = sales.filter(s=>s.type==='CARRO').length;
+
+  // crear HTML de resumen (simple)
+  const html = `
+    <div style="padding:16px; font-family:Arial;">
+      <h2>Resumen de ventas - ${date}</h2>
+      <p>Vehículos vendidos: Carros: <strong>${countCar}</strong> — Motos: <strong>${countMoto}</strong></p>
+      <p>Total vendido: <strong>Q${total.toFixed(2)}</strong></p>
+      <hr/>
+      <h3>Detalle de ventas</h3>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr><th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Código</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Tipo</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Entrada</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Salida</th>
+              <th style="text-align:right; padding:6px; border-bottom:1px solid #ccc;">Importe</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sales.map(s=>`<tr>
+            <td style="padding:6px; border-bottom:1px dashed #eee;">${s.code}</td>
+            <td style="padding:6px; border-bottom:1px dashed #eee;">${s.type}</td>
+            <td style="padding:6px; border-bottom:1px dashed #eee;">${formatDateTime(s.enteredAt)}</td>
+            <td style="padding:6px; border-bottom:1px dashed #eee;">${formatDateTime(s.exitedAt)}</td>
+            <td style="padding:6px; border-bottom:1px dashed #eee; text-align:right;">Q${Number(s.amount).toFixed(2)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+
+      <p style="margin-top:12px; font-weight:700;">POR FAVOR NO PIERDA ESTE DOCUMENTO</p>
+    </div>
+  `;
+
+  // convertir HTML a canvas con html2canvas y luego a PDF con jsPDF
+  const wrapper = document.createElement('div');
+  wrapper.style.width = '600px';
+  wrapper.innerHTML = html;
+  document.body.appendChild(wrapper);
+
+  try {
+    const canvas = await html2canvas(wrapper, { scale:2 });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth-40, pdfHeight);
+    // descargar con nombre con fecha
+    const filename = `CierreVentas_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
+    pdf.save(filename);
+    alert('Cierre exportado como PDF: ' + filename);
+  } catch(e){
+    console.error(e);
+    alert('Error al generar PDF. Asegúrate de permitir popups y recarga la página.');
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+
+  // limpiar datos (única forma de borrar)
+  localStorage.removeItem(STORAGE_KEYS.VEHICLES);
+  localStorage.removeItem(STORAGE_KEYS.SALES);
+  localStorage.removeItem(STORAGE_KEYS.CODES);
+  localStorage.removeItem(STORAGE_KEYS.LOGS);
+  // refrescar en memoria
+  vehicles = []; sales = []; usedCodes = []; logs = [];
+  renderVehicles(); renderSales(); renderLogs();
+}
+
+/* ---------- Exportar / Importar JSON (respaldo manual) ---------- */
+function exportJSON(){
+  const all = {
+    vehicles, sales, usedCodes, logs, exportedAt: nowISO()
+  };
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `respaldo_parqueo_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const obj = JSON.parse(e.target.result);
+      if(obj && (obj.vehicles || obj.sales)){
+        // Sobrescribir estado actual
+        vehicles = obj.vehicles || [];
+        sales = obj.sales || [];
+        usedCodes = obj.usedCodes || [];
+        logs = obj.logs || [];
+        save(STORAGE_KEYS.VEHICLES, vehicles);
+        save(STORAGE_KEYS.SALES, sales);
+        save(STORAGE_KEYS.CODES, usedCodes);
+        save(STORAGE_KEYS.LOGS, logs);
+        renderVehicles(); renderSales(); renderLogs();
+        alert('Respaldo importado correctamente.');
+      } else {
+        alert('Archivo JSON no válido.');
+      }
+    } catch(err){
+      alert('Error al leer JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- eventos UI ---------- */
+document.getElementById('btn-moto').addEventListener('click', ()=> addVehicle('MOTO'));
+document.getElementById('btn-carro').addEventListener('click', ()=> addVehicle('CARRO'));
+
+document.getElementById('btn-salida').addEventListener('click', ()=>{
+  const code = document.getElementById('exitCode').value.trim();
+  removeVehicleByCode(code);
+  document.getElementById('exitCode').value = '';
 });
-window.addEventListener('keydown', e=>{
-  if(e.ctrlKey && e.key.toLowerCase()==='p'){ e.preventDefault(); cierreVentas(); }
+
+document.getElementById('close-day').addEventListener('click', closeDayAndExportPDF);
+document.getElementById('download-json').addEventListener('click', exportJSON);
+document.getElementById('export-json').addEventListener('click', exportJSON);
+document.getElementById('import-json').addEventListener('click', ()=> document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', (e)=> {
+  const f = e.target.files[0];
+  if(f) importJSON(f);
 });
+
+/* ---------- inicilizar UI ---------- */
+renderVehicles();
+renderSales();
+renderLogs();
+
+/* Nota: se mantienen códigos usados en usedCodes para no repetir aun si se hace cierre parcial.
+   El cierre completo (closeDayAndExportPDF) elimina todos los datos — es la única forma de borrar según pediste. */
+
 </script>
 </body>
 </html>
