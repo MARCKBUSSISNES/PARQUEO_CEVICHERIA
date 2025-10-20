@@ -21,15 +21,14 @@
 body {
     background: url('121212.png') center/cover no-repeat fixed;
     color: var(--white);
-    height: 100vh;
-    overflow-x: hidden;
+    min-height: 100vh;
 }
 
 header {
     background-color: #000;
     text-align: center;
     padding: 1rem;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
@@ -50,26 +49,28 @@ header {
     justify-content: center;
 }
 
-.button-grid img {
-    width: 160px;
-    height: 160px;
+.button-grid img, .button-grid button {
+    width: 180px;
+    height: 180px;
+    font-size: 1.3rem;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 15px;
 }
 
-.button-grid img:hover {
+.button-grid img:hover, .button-grid button:hover {
     transform: scale(1.2);
     box-shadow: 0 0 20px var(--accent);
 }
 
 /* Listado de vehículos */
 .listado {
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
     padding: 1rem;
     border-radius: 15px;
     width: 90%;
-    max-width: 600px;
-    min-height: 150px;
+    max-width: 700px;
+    min-height: 200px;
     overflow-y: auto;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
@@ -78,6 +79,23 @@ header {
     text-align: center;
     margin-bottom: 1rem;
     color: var(--accent);
+    font-size: 1.5rem;
+}
+
+.listado ul li {
+    font-size: 2rem;
+    margin: 0.5rem 0;
+}
+
+/* Input para sacar vehículo */
+.salida-input {
+    padding: 1rem;
+    font-size: 2rem;
+    border-radius: 15px;
+    border: none;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
 }
 
 /* Ticket de impresión */
@@ -92,26 +110,16 @@ header {
 }
 
 .ticket-print h2 {
-    font-size: 22px;
+    font-size: 24px;
     margin-bottom: 15px;
     color: var(--accent);
 }
 
 .ticket-print p {
-    font-size: 20px;
+    font-size: 22px;
     margin: 8px 0;
 }
 
-/* Input para sacar vehículo */
-.salida-input {
-    padding: 0.7rem;
-    font-size: 1.2rem;
-    border-radius: 10px;
-    border: none;
-    text-align: center;
-}
-
-/* Pie de página */
 footer {
     margin-top: 2rem;
     text-align: center;
@@ -122,7 +130,9 @@ footer {
 
 /* Responsivo */
 @media(max-width:600px){
-    .button-grid img { width:140px; height:140px; }
+    .button-grid img, .button-grid button { width:140px; height:140px; font-size:1rem; }
+    .listado ul li { font-size: 1.5rem; }
+    .salida-input { font-size: 1.5rem; }
 }
 </style>
 </head>
@@ -135,16 +145,16 @@ footer {
     <div class="button-grid">
         <img src="CARRO.png" alt="Carro" id="btnCarro">
         <img src="MOTO.png" alt="Moto" id="btnMoto">
-        <img src="SALIDA.png" alt="Salida" id="btnSalida">
-        <button id="btnCierre" style="padding:0.7rem 1.5rem;font-size:1.3rem;border-radius:10px;background:#ff6600;color:#fff;border:none;cursor:pointer;">Cierre Día</button>
+        <button id="btnSalida" style="background:#ff6600;color:#fff;font-weight:bold;">SALIDA</button>
+        <button id="btnCierre" style="background:#ff6600;color:#fff;font-weight:bold;">Cierre Día</button>
     </div>
+
+    <input type="text" id="codigoSalida" class="salida-input" placeholder="Ingrese código para salida">
 
     <div class="listado">
         <h2>Vehículos Ingresados</h2>
         <ul id="vehiculosList"></ul>
     </div>
-
-    <input type="text" id="codigoSalida" class="salida-input" placeholder="Ingrese código para salida">
 
 </div>
 
@@ -184,7 +194,7 @@ function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
             <p>Código: <strong>${codigo}</strong></p>
             <p>Hora: <strong>${hora}</strong></p>
             ${!ingreso?`<p>Tarifa: <strong>Q${tipo==='CARRO'?10:5}.00</strong></p>`:''}
-            <p style="font-size:16px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+            <p style="font-size:18px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
         </div>
     `;
     const ventana = window.open('', '_blank', 'width=300,height=500');
@@ -217,12 +227,16 @@ function salidaVehiculo() {
     actualizarLista();
     imprimirTicket(v.codigo, v.simbolo, new Date().toLocaleString(), v.tipo, false);
     codigoSalida.value='';
+    codigoSalida.focus();
 }
 
 // Eventos
 document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
 document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
-document.getElementById('btnSalida').addEventListener('click', salidaVehiculo);
+document.getElementById('btnSalida').addEventListener('click', ()=>{codigoSalida.focus();});
+codigoSalida.addEventListener('keypress', (e)=>{
+    if(e.key==='Enter') salidaVehiculo();
+});
 actualizarLista();
 
 // Cierre
@@ -234,12 +248,12 @@ btnCierre.addEventListener('click', ()=>{
         else { totalMotos++; totalMonto+=5; }
     });
     const contenido = `
-        <div class="ticket-print" style="font-size:20px;">
+        <div class="ticket-print" style="font-size:22px;">
             <h2>🦐 PARQUEO CEVICHERÍA 🦐</h2>
             <p>Total Carros: <strong>${totalCarros}</strong></p>
             <p>Total Motos: <strong>${totalMotos}</strong></p>
             <p>Total Recaudado: <strong>Q${totalMonto}.00</strong></p>
-            <p style="font-size:16px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+            <p style="font-size:18px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
         </div>
     `;
     const ventana = window.open('', '_blank', 'width=400,height=600');
@@ -254,4 +268,3 @@ btnCierre.addEventListener('click', ()=>{
 
 </body>
 </html>
-
